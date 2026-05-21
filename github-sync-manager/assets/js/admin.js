@@ -648,7 +648,53 @@ jQuery(document).ready(function($) {
 	});
 
 	/* ---------------------------------------------------- */
-	/* 8. Manual Scan for Updates                           */
+	/* 8. Force Update Plugin                               */
+	/* ---------------------------------------------------- */
+	$pluginsCards.on('click', '.gsm-btn-force-update', function(e) {
+		e.preventDefault();
+
+		var $btn  = $(this);
+		var repo  = $btn.data('repo');
+		if (!repo) return;
+
+		if (!confirm(gsm_ajax.texts.force_update_confirm.replace('%s', repo))) {
+			return;
+		}
+
+		var origLabel = $btn.html();
+		$btn.prop('disabled', true).html('<span class="dashicons dashicons-update gsm-spin"></span> ' + gsm_ajax.texts.force_updating);
+
+		$.ajax({
+			url: gsm_ajax.url,
+			type: 'POST',
+			data: {
+				action: 'gsm_force_update',
+				repo: repo,
+				nonce: gsm_ajax.nonce
+			},
+			success: function(response) {
+				$btn.prop('disabled', false).html(origLabel);
+				if (response.success) {
+					if (response.data.table_html) {
+						$pluginsCards.html(response.data.table_html);
+					}
+					if (response.data.logs_html) {
+						$('#gsm-logs-table-wrapper').html(response.data.logs_html);
+					}
+					alert(response.data.message);
+				} else {
+					alert(gsm_ajax.texts.force_update_err.replace('%s', response.data.message));
+				}
+			},
+			error: function() {
+				$btn.prop('disabled', false).html(origLabel);
+				alert(gsm_ajax.texts.force_update_fail);
+			}
+		});
+	});
+
+	/* ---------------------------------------------------- */
+	/* 9. Manual Scan for Updates                           */
 	/* ---------------------------------------------------- */
 	$scanBtn.on('click', function(e) {
 		e.preventDefault();

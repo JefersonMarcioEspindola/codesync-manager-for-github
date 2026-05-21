@@ -34,6 +34,7 @@ class GSM_Admin {
 		add_action( 'wp_ajax_gsm_remove_plugin', array( __CLASS__, 'ajax_remove_plugin' ) );
 		add_action( 'wp_ajax_gsm_check_updates', array( __CLASS__, 'ajax_check_updates' ) );
 		add_action( 'wp_ajax_gsm_save_locale', array( __CLASS__, 'ajax_save_locale' ) );
+		add_action( 'wp_ajax_gsm_force_update', array( __CLASS__, 'ajax_force_update' ) );
 	}
 
 	/**
@@ -106,6 +107,12 @@ class GSM_Admin {
 				'confirm_disconnect'    => __( 'Tem certeza de que deseja desconectar sua conta GitHub? Os plugins continuarão instalados, mas não receberão notificações de atualização.', 'github-sync-manager' ),
 				'confirm_prompt'        => __( 'Aja como um desenvolvedor experiente em WordPress e Git. Meu repositório do plugin \'%s\' não possui releases publicadas no GitHub. Crie um guia passo a passo conciso em Markdown para eu publicar a release \'v%s\' desse plugin, explicando como gerar o arquivo ZIP correto (apenas a pasta do plugin, sem os arquivos de versionamento do Git) e como criar a Release no GitHub usando a interface web ou GitHub CLI. Inclua boas práticas de versionamento SemVer.', 'github-sync-manager' ),
 				'req_failed'            => __( 'Falha na requisição. Verifique sua conexão de rede.', 'github-sync-manager' ),
+				'force_update_confirm'  => __( 'Isso irá baixar e reinstalar a última versão do repositório %s, sobrescrevendo a versão atual. Continuar?', 'github-sync-manager' ),
+				'force_update_ok'       => __( 'Plugin reinstalado com sucesso! (Versão %s)', 'github-sync-manager' ),
+				'force_update_err'      => __( 'Erro ao reinstalar: %s', 'github-sync-manager' ),
+				'force_update_fail'     => __( 'Falha na comunicação ao tentar reinstalar.', 'github-sync-manager' ),
+				'force_update_btn'      => __( 'Atualizar', 'github-sync-manager' ),
+				'force_updating'        => __( 'Reinstalando...', 'github-sync-manager' ),
 				'install_success_title' => __( '✅ Plugin Instalado com Sucesso!', 'github-sync-manager' ),
 				'install_success_msg'   => __( 'O plugin <strong>%1$s</strong> (Versão %2$s) foi baixado e gravado localmente.', 'github-sync-manager' ),
 				'activate_btn'          => __( 'Ativar Plugin Agora', 'github-sync-manager' ),
@@ -430,6 +437,10 @@ class GSM_Admin {
 				<?php endif; ?>
 
 				<div class="gsm-plugin-card-actions">
+					<button type="button" class="button button-primary gsm-btn-force-update" data-repo="<?php echo esc_attr( $repo ); ?>">
+						<span class="dashicons dashicons-cloud-upload"></span>
+						<?php esc_html_e( 'Atualizar', 'github-sync-manager' ); ?>
+					</button>
 					<?php if ( ! empty( $data['is_branch'] ) ) : ?>
 						<button type="button" class="button button-small gsm-btn-copy-prompt" data-repo="<?php echo esc_attr( $repo ); ?>" data-version="<?php echo esc_attr( $installed_version ); ?>" title="<?php esc_attr_e( 'Copiar prompt de IA para criar releases', 'github-sync-manager' ); ?>">
 							<span class="dashicons dashicons-clipboard"></span>
@@ -993,6 +1004,144 @@ class GSM_Admin {
 		wp_send_json_success( array(
 			'message'    => __( 'Verificação concluída!', 'github-sync-manager' ),
 			'table_html' => $table_html,
+			'logs_html'  => $logs_html,
+		) );
+	}
+
+	/**
+	 * AJAX endpoint: Force reinstall a managed plugin from its latest GitHub release.
+	 */
+	public static function ajax_force_update() {
+		check_ajax_referer( 'gsm_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Sem permissões adequadas.', 'github-sync-manager' ) ) );
+		}
+
+		$repo_slug = isset( $_POST['repo'] ) ? sanitize_text_field( wp_unslash( $_POST['repo'] ) ) : '';
+		if ( empty( $repo_slug ) ) {
+			wp_send_json_error( array( 'message' => __( 'Repositório não especificado.', 'github-sync-manager' ) ) );
+		}
+
+		$token = get_option( GSM_Manager::OPTION_TOKEN );
+		if ( empty( $token ) ) {
+			wp_send_json_error( array( 'message' => __( 'Token do GitHub não configurado.', 'github-sync-manager' ) ) );
+		}
+
+		$security_check = GSM_Encryption::check_security_keys();
+		if ( is_wp_error( $security_check ) ) {
+			wp_send_json_error( array( 'message' => $security_check->get_error_message() ) );
+		}
+
+		$decrypted = GSM_Encryption::decrypt( $token );
+		if ( is_wp_error( $decrypted ) ) {
+			wp_send_json_error( array( 'message' => $decrypted->get_error_message() ) );
+		}
+
+		$managed = get_option( GSM_Manager::OPTION_PLUGINS, array() );
+		if ( ! isset( $managed[ $repo_slug ] ) ) {
+			wp_send_json_error( array( 'message' => __( 'Plugin não encontrado na lista gerenciada.', 'github-sync-manager' ) ) );
+		}
+
+		$plugin_data        = $managed[ $repo_slug ];
+		$selected_subfolder = isset( $plugin_data['subfolder'] ) ? $plugin_data['subfolder'] : '';
+		$stored_branch      = isset( $plugin_data['branch_name'] ) ? $plugin_data['branch_name'] : '';
+
+		$parts = explode( '/', $repo_slug );
+		if ( count( $parts ) !== 2 ) {
+			wp_send_json_error( array( 'message' => __( 'Slug de repositório inválido.', 'github-sync-manager' ) ) );
+		}
+		$owner = $parts[0];
+		$repo  = $parts[1];
+
+		$api = new GSM_GitHub_API( $decrypted );
+
+		// Use branch if plugin was installed from branch, otherwise use latest release
+		$target_release = null;
+		if ( ! empty( $plugin_data['is_branch'] ) && ! empty( $stored_branch ) ) {
+			$target_release = array(
+				'tag_name'    => $stored_branch,
+				'zipball_url' => 'https://api.github.com/repos/' . $repo_slug . '/zipball/' . $stored_branch,
+				'assets'      => array(),
+				'is_branch'   => true,
+				'branch_name' => $stored_branch,
+			);
+		} else {
+			$releases = $api->get_releases( $owner, $repo );
+			if ( is_wp_error( $releases ) ) {
+				wp_send_json_error( array( 'message' => $releases->get_error_message() ) );
+			}
+			if ( empty( $releases ) ) {
+				wp_send_json_error( array( 'message' => __( 'Nenhuma release encontrada no repositório.', 'github-sync-manager' ) ) );
+			}
+			$target_release = $releases[0];
+		}
+
+		$package_url = '';
+		if ( ! empty( $target_release['assets'] ) ) {
+			$package_url = $target_release['assets'][0]['url'];
+		} elseif ( ! empty( $target_release['zipball_url'] ) ) {
+			$package_url = $target_release['zipball_url'];
+		}
+
+		if ( empty( $package_url ) ) {
+			wp_send_json_error( array( 'message' => __( 'Nenhum pacote ZIP encontrado para download.', 'github-sync-manager' ) ) );
+		}
+
+		include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		include_once ABSPATH . 'wp-admin/includes/file.php';
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		GSM_Updater::$currently_installing_repo      = $repo_slug;
+		GSM_Updater::$currently_installing_subfolder = $selected_subfolder;
+
+		$gsm_fs_filter = function() { return 'direct'; };
+		add_filter( 'filesystem_method', $gsm_fs_filter, PHP_INT_MAX );
+
+		$skin     = new Automatic_Upgrader_Skin();
+		$upgrader = new Plugin_Upgrader( $skin );
+		$result   = $upgrader->install( $package_url, array( 'overwrite_package' => true ) );
+
+		remove_filter( 'filesystem_method', $gsm_fs_filter, PHP_INT_MAX );
+		wp_clean_plugins_cache();
+
+		GSM_Updater::$currently_installing_repo      = '';
+		GSM_Updater::$currently_installing_subfolder = '';
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+		}
+
+		if ( ! $result ) {
+			wp_send_json_error( array( 'message' => __( 'A reinstalação falhou. Tente novamente ou verifique as permissões do servidor.', 'github-sync-manager' ) ) );
+		}
+
+		$latest_version = ltrim( $target_release['tag_name'], 'vV' );
+
+		$managed[ $repo_slug ]['latest_version'] = $latest_version;
+		$managed[ $repo_slug ]['status']         = 'atualizado';
+		$managed[ $repo_slug ]['last_checked']   = current_time( 'mysql' );
+		$managed[ $repo_slug ]['error_message']  = '';
+
+		GSM_Manager::update_option_no_autoload( GSM_Manager::OPTION_PLUGINS, $managed );
+		GSM_Manager::log(
+			$repo_slug,
+			'atualizacao',
+			'sucesso',
+			sprintf( __( 'Plugin reinstalado com sucesso via força (Versão %s).', 'github-sync-manager' ), $latest_version )
+		);
+
+		ob_start();
+		self::render_plugins_cards();
+		$cards_html = ob_get_clean();
+
+		ob_start();
+		self::render_logs_table();
+		$logs_html = ob_get_clean();
+
+		wp_send_json_success( array(
+			'message'    => sprintf( __( 'Plugin reinstalado com sucesso! (Versão %s)', 'github-sync-manager' ), $latest_version ),
+			'table_html' => $cards_html,
 			'logs_html'  => $logs_html,
 		) );
 	}
