@@ -70,9 +70,17 @@ class GSM_Admin {
 		);
 
 		wp_enqueue_script(
+			'lucide',
+			'https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js',
+			array(),
+			null,
+			true
+		);
+
+		wp_enqueue_script(
 			'gsm-admin-script',
 			plugins_url( 'assets/js/admin.js', dirname( __FILE__ ) ),
-			array( 'jquery' ),
+			array( 'jquery', 'lucide' ),
 			defined( 'GSM_VERSION' ) ? GSM_VERSION : '1.0.0',
 			true
 		);
@@ -147,7 +155,7 @@ class GSM_Admin {
 		<div class="wrap gsm-wrap">
 			<div class="gsm-header-panel">
 				<h1 class="gsm-title">
-					<span class="dashicons dashicons-update-alt"></span>
+					<i data-lucide="github" class="gsm-icon"></i>
 					<?php esc_html_e( 'GitHub Sync Manager', 'github-sync-manager' ); ?>
 				</h1>
 				
@@ -211,7 +219,7 @@ class GSM_Admin {
 					<div id="gsm-tab-plugins" class="gsm-tab-content gsm-tab-active">
 						<div class="gsm-action-bar">
 							<button type="button" class="button button-primary" id="gsm-btn-scan-now">
-								<span class="dashicons dashicons-search"></span>
+								<i data-lucide="search" class="gsm-icon"></i>
 								<?php esc_html_e( 'Verificar atualizações agora', 'github-sync-manager' ); ?>
 							</button>
 							<span class="spinner gsm-spinner" id="gsm-scan-spinner"></span>
@@ -225,14 +233,14 @@ class GSM_Admin {
 					<!-- Tab content: Add Plugin -->
 					<div id="gsm-tab-add" class="gsm-tab-content">
 						<div class="gsm-info-notice" style="margin-bottom: 20px; margin-top: 0;">
-							<span class="dashicons dashicons-info"></span>
+							<i data-lucide="info" class="gsm-icon"></i>
 							<p><?php esc_html_e( 'Exibindo apenas repositórios com código PHP principal ou com nome/descrição relacionados a plugins WordPress.', 'github-sync-manager' ); ?></p>
 						</div>
 
 						<div class="gsm-filter-bar">
 							<input type="text" id="gsm-repo-search" placeholder="<?php esc_attr_e( 'Buscar repositório por nome...', 'github-sync-manager' ); ?>" autocomplete="off" />
 							<button type="button" class="button" id="gsm-btn-reload-repos">
-								<span class="dashicons dashicons-update"></span>
+								<i data-lucide="refresh-cw" class="gsm-icon"></i>
 								<?php esc_html_e( 'Recarregar Repositórios', 'github-sync-manager' ); ?>
 							</button>
 							<span class="spinner gsm-spinner" id="gsm-repos-spinner"></span>
@@ -294,7 +302,7 @@ class GSM_Admin {
 											<p><?php esc_html_e( 'O sistema verifica se há atualizações disponíveis para os plugins de forma automática duas vezes ao dia.', 'github-sync-manager' ); ?></p>
 											
 											<div class="gsm-info-notice">
-												<span class="dashicons dashicons-info"></span>
+												<i data-lucide="info" class="gsm-icon"></i>
 												<p><em>“<?php esc_html_e( 'As verificações automáticas dependem de tráfego no site. Para sites de produção, recomenda-se desabilitar o WP-Cron no wp-config.php e agendar uma tarefa cron real no servidor chamando wp-cron.php.', 'github-sync-manager' ); ?>”</em></p>
 											</div>
 										</td>
@@ -395,13 +403,13 @@ class GSM_Admin {
 					<div>
 						<h3 class="gsm-plugin-card-title"><?php echo esc_html( $plugin_name ); ?></h3>
 						<a class="gsm-plugin-card-repo" href="<?php echo esc_url( 'https://github.com/' . $repo ); ?>" target="_blank" rel="noopener noreferrer">
-							<span class="dashicons dashicons-external"></span><?php echo esc_html( $repo ); ?>
+							<i data-lucide="external-link" class="gsm-icon"></i><?php echo esc_html( $repo ); ?>
 						</a>
 					</div>
 					<span class="gsm-status-badge <?php echo esc_attr( $status_class ); ?>">
 						<?php echo esc_html( $status_label ); ?>
 						<?php if ( 'erro' === $status && ! empty( $error_message ) ) : ?>
-							<span class="dashicons dashicons-editor-help gsm-tooltip-trigger" title="<?php echo esc_attr( $error_message ); ?>"></span>
+							<i data-lucide="help-circle" class="gsm-icon gsm-tooltip-trigger" title="<?php echo esc_attr( $error_message ); ?>"></i>
 						<?php endif; ?>
 					</span>
 				</div>
@@ -431,19 +439,19 @@ class GSM_Admin {
 
 				<?php if ( ! empty( $last_checked ) ) : ?>
 				<p class="gsm-plugin-last-checked">
-					<span class="dashicons dashicons-clock"></span>
+					<i data-lucide="clock" class="gsm-icon"></i>
 					<?php printf( esc_html__( 'Última verificação: %s', 'github-sync-manager' ), esc_html( date_i18n( 'd/m/Y H:i', strtotime( $last_checked ) ) ) ); ?>
 				</p>
 				<?php endif; ?>
 
 				<div class="gsm-plugin-card-actions">
 					<button type="button" class="button button-primary gsm-btn-force-update" data-repo="<?php echo esc_attr( $repo ); ?>">
-						<span class="dashicons dashicons-cloud-upload"></span>
+						<i data-lucide="cloud-upload" class="gsm-icon"></i>
 						<?php esc_html_e( 'Atualizar', 'github-sync-manager' ); ?>
 					</button>
 					<?php if ( ! empty( $data['is_branch'] ) ) : ?>
 						<button type="button" class="button button-small gsm-btn-copy-prompt" data-repo="<?php echo esc_attr( $repo ); ?>" data-version="<?php echo esc_attr( $installed_version ); ?>" title="<?php esc_attr_e( 'Copiar prompt de IA para criar releases', 'github-sync-manager' ); ?>">
-							<span class="dashicons dashicons-clipboard"></span>
+							<i data-lucide="clipboard" class="gsm-icon"></i>
 							<?php esc_html_e( 'Prompt Release', 'github-sync-manager' ); ?>
 						</button>
 					<?php endif; ?>

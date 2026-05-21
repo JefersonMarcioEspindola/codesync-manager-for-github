@@ -299,12 +299,12 @@ jQuery(document).ready(function($) {
 							.replace('%1$s', data.plugin_name)
 							.replace('%2$s', data.version);
 						bodyHtml += '<div class="gsm-modal-success-banner">';
-						bodyHtml += '  <span class="dashicons dashicons-yes-alt"></span>';
+						bodyHtml += '  <i data-lucide="check-circle" class="gsm-icon"></i>';
 						bodyHtml += '  <p>' + bannerText + '</p>';
 						bodyHtml += '</div>';
 					} else {
 						bodyHtml += '<div class="gsm-modal-warning-banner">';
-						bodyHtml += '  <span class="dashicons dashicons-warning"></span>';
+						bodyHtml += '  <i data-lucide="triangle-alert" class="gsm-icon"></i>';
 						bodyHtml += '  <p>' + gsm_ajax.texts.plugin_not_detected + '</p>';
 						bodyHtml += '</div>';
 					}
@@ -317,7 +317,7 @@ jQuery(document).ready(function($) {
 					bodyHtml += '<div class="gsm-modal-advanced-toggle">';
 					bodyHtml += '  <a href="#" class="gsm-toggle-advanced-link">';
 					bodyHtml += '    ' + gsm_ajax.texts.advanced_options + ' ';
-					bodyHtml += '    <span class="dashicons dashicons-arrow-' + (optionsVisible ? 'up' : 'down') + '-alt2"></span>';
+					bodyHtml += '    <i data-lucide="chevron-down" class="gsm-icon gsm-toggle-chevron' + (optionsVisible ? ' gsm-rotated' : '') + '"></i>';
 					bodyHtml += '  </a>';
 					bodyHtml += '</div>';
 
@@ -353,7 +353,7 @@ jQuery(document).ready(function($) {
 					bodyHtml += '    <div class="gsm-folder-picker">';
 					bodyHtml += '      <button type="button" class="gsm-folder-trigger" aria-expanded="false">';
 					bodyHtml += '        <span class="gsm-folder-trigger-label">' + triggerLabel + '</span>';
-					bodyHtml += '        <span class="gsm-folder-trigger-chevron dashicons dashicons-arrow-down-alt2"></span>';
+					bodyHtml += '        <i data-lucide="chevron-down" class="gsm-icon gsm-folder-trigger-chevron"></i>';
 					bodyHtml += '      </button>';
 
 					var treeItemsHtml = '';
@@ -363,7 +363,7 @@ jQuery(document).ready(function($) {
 					treeItemsHtml += '<li class="gsm-folder-item gsm-folder-item--root' + rootSel + '" data-value="">';
 					treeItemsHtml += '  <span class="gsm-fi-icon">📂</span>';
 					treeItemsHtml += '  <span class="gsm-fi-name">' + gsm_ajax.texts.root_folder + '</span>';
-					if (defPath === '') { treeItemsHtml += '<span class="gsm-fi-check dashicons dashicons-yes"></span>'; }
+					if (defPath === '') { treeItemsHtml += '<i data-lucide="check" class="gsm-icon gsm-fi-check"></i>'; }
 					treeItemsHtml += '</li>';
 
 					// Build tree from flat paths
@@ -383,7 +383,7 @@ jQuery(document).ready(function($) {
 							var path = obj.__path;
 							var indent = depth;
 							var isSel = (defPath === path) ? ' gsm-folder-item--selected' : '';
-							var checkIcon = (defPath === path) ? '<span class="gsm-fi-check dashicons dashicons-yes"></span>' : '';
+							var checkIcon = (defPath === path) ? '<i data-lucide="check" class="gsm-icon gsm-fi-check"></i>' : '';
 							html += '<li class="gsm-folder-item' + isSel + '" data-value="' + path + '" data-depth="' + indent + '">';
 							for (var d = 0; d < indent; d++) {
 								html += '<span class="gsm-fi-indent"></span>';
@@ -408,7 +408,7 @@ jQuery(document).ready(function($) {
 
 					// Info box
 					bodyHtml += '    <div class="gsm-info-box">';
-					bodyHtml += '      <span class="dashicons dashicons-info"></span>';
+					bodyHtml += '      <i data-lucide="info" class="gsm-icon"></i>';
 					bodyHtml += '      <p class="gsm-field-description">' + gsm_ajax.texts.select_folder_desc + '</p>';
 					bodyHtml += '    </div>';
 					bodyHtml += '  </div>';
@@ -416,6 +416,7 @@ jQuery(document).ready(function($) {
 					bodyHtml += '</div>'; // .gsm-modal-options
 
 					$modalBody.html(bodyHtml);
+					lucide.createIcons({ nodes: [$modalBody[0]] });
 					$modalFooter.find('.gsm-modal-btn-install').prop('disabled', false);
 
 					// ── Toggle advanced panel ──────────────────────────────
@@ -423,14 +424,10 @@ jQuery(document).ready(function($) {
 						e.preventDefault();
 						var $link = $(this);
 						var $optionsPanel = $modalBody.find('.gsm-modal-options');
-						var $icon = $link.find('.dashicons');
+						var $icon = $link.find('.gsm-toggle-chevron');
 
 						$optionsPanel.slideToggle(200, function() {
-							if ($optionsPanel.is(':visible')) {
-								$icon.removeClass('dashicons-arrow-down-alt2').addClass('dashicons-arrow-up-alt2');
-							} else {
-								$icon.removeClass('dashicons-arrow-up-alt2').addClass('dashicons-arrow-down-alt2');
-							}
+							$icon.toggleClass('gsm-rotated', $optionsPanel.is(':visible'));
 						});
 					});
 
@@ -494,7 +491,8 @@ jQuery(document).ready(function($) {
 		$picker.find('.gsm-folder-item').removeClass('gsm-folder-item--selected')
 			.find('.gsm-fi-check').remove();
 		$item.addClass('gsm-folder-item--selected')
-			.append('<span class="gsm-fi-check dashicons dashicons-yes"></span>');
+			.append('<i data-lucide="check" class="gsm-icon gsm-fi-check"></i>');
+		lucide.createIcons({ nodes: [$item[0]] });
 
 		var label = newValue ? ('📁 ' + newValue) : ('📁 ' + gsm_ajax.texts.root_folder);
 		$trigger.find('.gsm-folder-trigger-label').text(label);
@@ -662,7 +660,7 @@ jQuery(document).ready(function($) {
 		}
 
 		var origLabel = $btn.html();
-		$btn.prop('disabled', true).html('<span class="dashicons dashicons-update gsm-spin"></span> ' + gsm_ajax.texts.force_updating);
+		$btn.prop('disabled', true).html('<i data-lucide="loader-circle" class="gsm-icon gsm-spin"></i> ' + gsm_ajax.texts.force_updating);
 
 		$.ajax({
 			url: gsm_ajax.url,
@@ -677,6 +675,7 @@ jQuery(document).ready(function($) {
 				if (response.success) {
 					if (response.data.table_html) {
 						$pluginsCards.html(response.data.table_html);
+						lucide.createIcons({ nodes: [$pluginsCards[0]] });
 					}
 					if (response.data.logs_html) {
 						$('#gsm-logs-table-wrapper').html(response.data.logs_html);
@@ -717,12 +716,13 @@ jQuery(document).ready(function($) {
 					// Update plugins cards HTML
 					if (response.data.table_html) {
 						$pluginsCards.html(response.data.table_html);
+						lucide.createIcons({ nodes: [$pluginsCards[0]] });
 					}
 					// Update logs tab content
 					if (response.data.logs_html) {
 						$('#gsm-logs-table-wrapper').html(response.data.logs_html);
 					}
-					
+
 					alert(response.data.message);
 				} else {
 					alert(gsm_ajax.texts.scan_error.replace('%s', response.data.message));
@@ -812,4 +812,7 @@ jQuery(document).ready(function($) {
 
 		document.body.removeChild(textArea);
 	}
+
+	// Initialize all Lucide icons rendered by PHP on page load
+	lucide.createIcons();
 });

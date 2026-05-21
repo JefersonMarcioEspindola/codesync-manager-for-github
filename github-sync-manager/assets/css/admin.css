@@ -13,6 +13,39 @@
 	--gsm-bg:           #FFFFFF;
 }
 
+/* ========================
+   Lucide Icons
+   ======================== */
+.gsm-icon {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+	flex-shrink: 0;
+	stroke: currentColor;
+	stroke-width: 2;
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.gsm-rotated {
+	transform: rotate(180deg);
+	transition: transform 0.2s ease;
+}
+
+.gsm-toggle-chevron {
+	transition: transform 0.2s ease;
+}
+
+.gsm-folder-trigger-chevron {
+	transition: transform 0.2s ease;
+}
+
+.gsm-folder-trigger[aria-expanded="true"] .gsm-folder-trigger-chevron {
+	transform: rotate(180deg);
+}
+
 .gsm-wrap {
 	margin: 20px 20px 0 0;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
