@@ -25,6 +25,13 @@ class GSM_Updater {
 	public static $currently_installing_repo = '';
 
 	/**
+	 * Tracks the subfolder of the repository currently being installed via the admin panel.
+	 *
+	 * @var string
+	 */
+	public static $currently_installing_subfolder = '';
+
+	/**
 	 * Temporary backup information for rollback during updates.
 	 *
 	 * @var array
@@ -338,8 +345,38 @@ class GSM_Updater {
 		$text_domain  = '';
 		$fallback_name= '';
 
+		// Identify subfolder if specified
+		$subfolder = '';
+		if ( ! empty( self::$currently_installing_subfolder ) ) {
+			$subfolder = self::$currently_installing_subfolder;
+		} else {
+			$managed_plugins = get_option( GSM_Manager::OPTION_PLUGINS, array() );
+			if ( is_array( $managed_plugins ) ) {
+				foreach ( $managed_plugins as $slug => $data ) {
+					if ( isset( $data['plugin_file'] ) && ! empty( $hook_extra['plugin'] ) && $data['plugin_file'] === $hook_extra['plugin'] ) {
+						if ( ! empty( $data['subfolder'] ) ) {
+							$subfolder = $data['subfolder'];
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		$search_dir = $source_dir;
+		if ( ! empty( $subfolder ) ) {
+			$search_dir = $source_dir . trim( $subfolder, '/' );
+			if ( ! is_dir( $search_dir ) ) {
+				return new WP_Error(
+					'gsm_subfolder_not_found',
+					sprintf( __( 'O subdiretório especificado "%s" não foi encontrado no repositório.', 'github-sync-manager' ), $subfolder )
+				);
+			}
+			$search_dir = trailingslashit( $search_dir );
+		}
+
 		// Search recursively for PHP files
-		$dir_iterator = new RecursiveDirectoryIterator( $source_dir );
+		$dir_iterator = new RecursiveDirectoryIterator( $search_dir );
 		$iterator     = new RecursiveIteratorIterator( $dir_iterator );
 		$regex        = new RegexIterator( $iterator, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH );
 
@@ -378,20 +415,33 @@ class GSM_Updater {
 			);
 		}
 
-		// Rename the extracted folder
-		$corrected_source = trailingslashit( dirname( $source ) ) . $canonical_slug;
+		// Normalize paths for comparison
+		$source_path      = rtrim( wp_normalize_path( $source ), '/' );
+		$plugin_root_dir  = rtrim( wp_normalize_path( dirname( $main_file ) ), '/' );
+		$corrected_source = rtrim( wp_normalize_path( trailingslashit( dirname( $source_path ) ) . $canonical_slug ), '/' );
 
-		if ( $source !== $corrected_source ) {
-			if ( file_exists( $corrected_source ) ) {
-				// Delete existing destination folder in temp to avoid collision
-				GSM_Manager::delete_directory_recursive( $corrected_source );
-			}
+		if ( file_exists( $corrected_source ) ) {
+			// Delete existing destination folder in temp to avoid collision
+			GSM_Manager::delete_directory_recursive( $corrected_source );
+		}
 
-			if ( ! rename( $source, $corrected_source ) ) {
+		if ( $plugin_root_dir !== $source_path ) {
+			// Plugin is nested inside a subdirectory. Move the subdirectory to the target destination.
+			if ( ! rename( $plugin_root_dir, $corrected_source ) ) {
 				return new WP_Error(
-					'gsm_rename_failed',
-					__( 'Falha ao renomear o diretório temporário do plugin para o slug canônico.', 'github-sync-manager' )
+					'gsm_rename_nested_failed',
+					__( 'Falha ao renomear o subdiretório do plugin para o slug canônico.', 'github-sync-manager' )
 				);
+			}
+		} else {
+			// Plugin is at the root. Rename the root source folder.
+			if ( $source_path !== $corrected_source ) {
+				if ( ! rename( $source_path, $corrected_source ) ) {
+					return new WP_Error(
+						'gsm_rename_failed',
+						__( 'Falha ao renomear o diretório temporário do plugin para o slug canônico.', 'github-sync-manager' )
+					);
+				}
 			}
 		}
 

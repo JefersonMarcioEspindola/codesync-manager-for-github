@@ -1,9 +1,11 @@
 <?php
 /**
  * Plugin Name: GitHub Sync Manager
+ * Plugin URI: https://github.com/JefersonMarcioEspindola/github-sync-manager
  * Description: Permite ao administrador do site instalar e manter atualizados outros plugins WordPress hospedados em repositórios do GitHub, públicos ou privados, usando as releases como fonte de verdade.
- * Version: 0.0.2
- * Author: DeepMind Antigravity
+ * Version: 0.0.6
+ * Author: Jeferson Espindola
+ * Author URI: https://github.com/JefersonMarcioEspindola/github-sync-manager
  * Text Domain: github-sync-manager
  * Domain Path: /languages
  * License: GPLv2 or later
@@ -19,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Constant Definitions
  */
-define( 'GSM_VERSION', '0.0.2' );
+define( 'GSM_VERSION', '0.0.6' );
 define( 'GSM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'GSM_FILE', __FILE__ );
 
@@ -44,6 +46,9 @@ spl_autoload_register( function( $class_name ) {
  * Core Initialization Function
  */
 function gsm_init() {
+	// Load text domain for translations
+	load_plugin_textdomain( 'github-sync-manager', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+
 	// Initialize core components
 	GSM_Updater::init();
 
@@ -55,6 +60,20 @@ function gsm_init() {
 	add_action( 'gsm_cron_check_updates', 'gsm_cron_check_updates_callback' );
 }
 add_action( 'plugins_loaded', 'gsm_init' );
+
+/**
+ * Force plugin locale to the configured one if saved
+ */
+add_filter( 'plugin_locale', 'gsm_force_plugin_locale', 10, 2 );
+function gsm_force_plugin_locale( $locale, $domain ) {
+	if ( 'github-sync-manager' === $domain ) {
+		$selected = get_option( 'gsm_locale', '' );
+		if ( ! empty( $selected ) ) {
+			return $selected;
+		}
+	}
+	return $locale;
+}
 
 /**
  * Activation Hook.

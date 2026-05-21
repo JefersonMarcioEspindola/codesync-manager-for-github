@@ -1,0 +1,417 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GitHub Sync Manager 0.0.5\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-21 16:00-0300\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GitHub Sync Manager"
+msgstr "GitHub Sync Manager"
+
+msgid "Você não tem permissão para acessar esta página."
+msgstr "No tiene permiso para acceder a esta página."
+
+msgid "Erro de Segurança:"
+msgstr "Error de Seguridad:"
+
+msgid "Conectar Conta GitHub"
+msgstr "Conectar Cuenta de GitHub"
+
+msgid "Para começar a gerenciar seus plugins hospedados no GitHub, conecte uma conta utilizando um Personal Access Token (PAT) com as devidas permissões."
+msgstr "Para comenzar a administrar sus complementos alojados en GitHub, conecte una cuenta utilizando un Token de Acceso Personal (PAT) con los permisos adecuados."
+
+msgid "Qual tipo de token criar?"
+msgstr "¿Qué tipo de token crear?"
+
+msgid "Classic PAT:"
+msgstr "Classic PAT:"
+
+msgid "Crie um token com o escopo "
+msgstr "Cree un token con el alcance "
+
+msgid "para repositórios privados e públicos"
+msgstr "para repositorios privados y públicos"
+
+msgid "ou "
+msgstr "o "
+
+msgid "somente para públicos"
+msgstr "solo para públicos"
+
+msgid "Fine-Grained PAT (Novo):"
+msgstr "Fine-Grained PAT (Nuevo):"
+
+msgid "Selecione permissão de leitura e gravação para \"Contents\" e \"Metadata\" nos repositórios que deseja gerenciar."
+msgstr "Seleccione permisos de lectura y escritura para \"Contents\" y \"Metadata\" en los repositorios que desea administrar."
+
+msgid "Clique aqui para criar seu Token no GitHub"
+msgstr "Haga clic aquí para crear su Token en GitHub"
+
+msgid "GitHub Personal Access Token (PAT)"
+msgstr "Token de Acceso Personal de GitHub (PAT)"
+
+msgid "Conectar Conta"
+msgstr "Conectar Cuenta"
+
+msgid "Plugins Gerenciados"
+msgstr "Plugins Administrados"
+
+msgid "Adicionar Plugin"
+msgstr "Añadir Plugin"
+
+msgid "Histórico de Logs"
+msgstr "Historial de Logs"
+
+msgid "Configurações"
+msgstr "Configuraciones"
+
+msgid "Verificar atualizações agora"
+msgstr "Buscar actualizaciones ahora"
+
+msgid "Plugin"
+msgstr "Plugin"
+
+msgid "Repositório GitHub"
+msgstr "Repositorio GitHub"
+
+msgid "Versão Instalada"
+msgstr "Versión Instalada"
+
+msgid "Versão mais Recente"
+msgstr "Versión más Reciente"
+
+msgid "Última Verificação"
+msgstr "Última Verificación"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Ações"
+msgstr "Acciones"
+
+msgid "Exibindo apenas repositórios com código PHP principal ou com nome/descrição relacionados a plugins WordPress."
+msgstr "Mostrando solo repositorios con código PHP principal o con nombre/descripción relacionados con plugins de WordPress."
+
+msgid "Buscar repositório por nome..."
+msgstr "Buscar repositorio por nombre..."
+
+msgid "Recarregar Repositórios"
+msgstr "Recargar Repositorios"
+
+msgid "Configurações do GitHub Sync"
+msgstr "Configuraciones de GitHub Sync"
+
+msgid "Conta Conectada"
+msgstr "Cuenta Conectada"
+
+msgid "Tipo de Token: %s"
+msgstr "Tipo de Token: %s"
+
+msgid "Token Armazenado"
+msgstr "Token Almacenado"
+
+msgid "Idioma do Plugin"
+msgstr "Idioma del Plugin"
+
+msgid "Português (Brasil)"
+msgstr "Português (Brasil)"
+
+msgid "English (US)"
+msgstr "English (US)"
+
+msgid "Español"
+msgstr "Español"
+
+msgid "Selecione o idioma da interface do GitHub Sync Manager."
+msgstr "Seleccione el idioma de la interfaz de GitHub Sync Manager."
+
+msgid "Agendamento Automático"
+msgstr "Programación Automática"
+
+msgid "O sistema verifica se há atualizações disponíveis para os plugins de forma automática duas vezes ao dia."
+msgstr "El sistema verifica las actualizaciones disponibles para los plugins de forma automática dos veces al día."
+
+msgid "As verificações automáticas dependem de tráfego no site. Para sites de produção, recomenda-se desabilitar o WP-Cron no wp-config.php e agendar uma tarefa cron real no servidor chamando wp-cron.php."
+msgstr "Las verificaciones automáticas dependen del tráfico del sitio. Para sitios de producción, se recomienda deshabilitar WP-Cron en wp-config.php y programar una tarea cron real en el servidor llamando a wp-cron.php."
+
+msgid "Desconectar conta GitHub"
+msgstr "Desconectar cuenta de GitHub"
+
+msgid "Parar de gerenciar"
+msgstr "Dejar de administrar"
+
+msgid "Atualizado"
+msgstr "Actualizado"
+
+msgid "Atualização disponível"
+msgstr "Actualización disponible"
+
+msgid "Indisponível"
+msgstr "No disponible"
+
+msgid "Erro"
+msgstr "Error"
+
+msgid "Ramo: %s"
+msgstr "Rama: %s"
+
+msgid "Prompt Release"
+msgstr "Copiar Prompt"
+
+msgid "Copiar prompt de IA para criar releases"
+msgstr "Copiar prompt de IA para crear releases"
+
+msgid "Instalado diretamente de uma branch, sem releases no GitHub."
+msgstr "Instalado directamente desde una rama, sin releases en GitHub."
+
+msgid "Instalado diretamente da branch principal do GitHub (sem releases)."
+msgstr "Instalado directamente desde la rama principal de GitHub (sin releases)."
+
+msgid "Ramo Principal (%s)"
+msgstr "Rama Principal (%s)"
+
+msgid "Falha ao buscar detalhes da branch padrão (%d)."
+msgstr "Error al buscar detalles de la rama predeterminada (%d)."
+
+msgid "Nenhum arquivo PHP de plugin válido com cabeçalho \"Plugin Name:\" foi encontrado na raiz ou subpastas de primeiro nível do repositório."
+msgstr "No se encontró ningún archivo PHP de plugin válido con la cabecera \"Plugin Name:\" en la raíz ni en las subcarpetas de primer nivel del repositorio."
+
+msgid "Nenhum cabeçalho \"Plugin Name:\" válido com versão foi encontrado nos arquivos da raiz."
+msgstr "No se encontró ninguna cabecera \"Plugin Name:\" válida con versión en los archivos de la raíz."
+
+msgid "Falha ao buscar as releases do repositório (%d)."
+msgstr "Error al buscar las releases del repositorio (%d)."
+
+msgid "Repositório não encontrado ou sem permissão de acesso. Verifique se o token tem acesso a este repositório específico."
+msgstr "Repositorio no encontrado o sin permiso de acceso. Verifique si el token tiene acceso a este repositorio específico."
+
+msgid "Erro ao acessar o repositório (%d)."
+msgstr "Error al acceder al repositorio (%d)."
+
+msgid "Falha ao buscar a lista de repositórios do GitHub."
+msgstr "Error al obtener la lista de repositorios de GitHub."
+
+msgid "Dados de repositórios inválidos."
+msgstr "Datos de repositorios no válidos."
+
+msgid "Token inválido ou sem permissões necessárias. Verifique se o token foi criado com o escopo repo e tente novamente."
+msgstr "Token no válido o sin los permisos necesarios. Verifique si el token fue creado con el alcance repo e intente de nuevo."
+
+msgid "Resposta inválida da API do GitHub."
+msgstr "Respuesta no válida de la API de GitHub."
+
+msgid "Ação de instalação inválida."
+msgstr "Acción de instalación no válida."
+
+msgid "Sem permissão."
+msgstr "Sin permiso."
+
+msgid "A URL de download está vazia."
+msgstr "La URL de descarga está vacía."
+
+msgid "Você não tem permissão para realizar esta ação."
+msgstr "No tiene permiso para realizar esta acción."
+
+msgid "Idioma inválido."
+msgstr "Idioma no válido."
+
+msgid "Idioma atualizado com sucesso!"
+msgstr "¡Idioma actualizado con éxito!"
+
+msgid "O plugin continuará instalado, mas deixará de receber atualizações automáticas. Deseja continuar?"
+msgstr "El plugin continuará instalado, pero dejará de recibir actualizaciones automáticas. ¿Desea continuar?"
+
+msgid "Baixando e instalando..."
+msgstr "Descargando e instalando..."
+
+msgid "Pesquisando repositórios..."
+msgstr "Buscando repositorios..."
+
+msgid "Verificação concluída!"
+msgstr "¡Verificación completada!"
+
+msgid "Verificação manual executada para todos os plugins gerenciados."
+msgstr "Verificación manual ejecutada para todos los plugins administrados."
+
+msgid "Falha na requisição. Verifique sua conexão de rede."
+msgstr "La solicitud falló. Por favor, compruebe su conexión de red."
+
+msgid "✅ Plugin Instalado com Sucesso!"
+msgstr "¡✅ Plugin instalado con éxito!"
+
+msgid "O plugin <strong>%1$s</strong> (Versão %2$s) foi baixado e gravado localmente."
+msgstr "El plugin <strong>%1$s</strong> (Versión %2$s) fue descargado y guardado localmente."
+
+msgid "Ativar Plugin Agora"
+msgstr "Activar plugin ahora"
+
+msgid "Erro ao verificar: %s"
+msgstr "Error al comprobar: %s"
+
+msgid "Falha na comunicação."
+msgstr "La comunicación falló."
+
+msgid "Deseja baixar e instalar o plugin do repositório %s?"
+msgstr "¿Desea descargar e instalar el plugin del repositorio %s?"
+
+msgid "Erro na Instalação: %s"
+msgstr "Error en la instalación: %s"
+
+msgid "Falha na comunicação de rede ao tentar instalar o plugin."
+msgstr "Fallo de comunicación de red al intentar instalar el plugin."
+
+msgid "Erro ao excluir gerenciamento."
+msgstr "Error al aliminar la gestión."
+
+msgid "Falha na comunicação de rede durante o escaneamento."
+msgstr "Fallo de comunicación de red durante el escaneo."
+
+msgid "Prompt de IA copiado para a área de transferência com sucesso!"
+msgstr "¡El prompt de IA se copió al portapapeles con éxito!"
+
+msgid "Não foi possível copiar o prompt automaticamente. Por favor, copie manualmente."
+msgstr "No se pudo copiar el prompt automáticamente. Por favor, cópielo manualmente."
+
+msgid "Erro ao salvar o idioma."
+msgstr "Error al guardar el idioma."
+
+msgid "Carregando seus repositórios do GitHub..."
+msgstr "Cargando sus repositorios de GitHub..."
+
+msgid "Erro de conexão ao buscar repositórios."
+msgstr "Error de conexión al buscar repositorios."
+
+msgid "Nenhum repositório encontrado na sua conta do GitHub."
+msgstr "No se encontraron repositorios en su cuenta de GitHub."
+
+msgid "Já Gerenciado"
+msgstr "Ya gestionado"
+
+msgid "Instalar Plugin"
+msgstr "Instalar plugin"
+
+msgid "Sem descrição no repositório."
+msgstr "Sin descripción en el repositorio."
+
+msgid "Atualizado: %s"
+msgstr "Actualizado: %s"
+
+msgid "Privado"
+msgstr "Privado"
+
+msgid "Público"
+msgstr "Público"
+
+msgid "Nenhum plugin gerenciado ainda. Acesse a aba \"Adicionar Plugin\" para começar."
+msgstr "Ningún plugin administrado todavía. Acceda a la pestaña \"Añadir plugin\" para comenzar."
+
+msgid "Tem certeza de que deseja desconectar sua conta GitHub? Os plugins continuarão instalados, mas não receberão notificações de atualização."
+msgstr "¿Está seguro de que desea desconectar su cuenta de GitHub? Los plugins seguirán instalados pero no recibirán notificaciones de actualización."
+
+msgid "Aja como um desenvolvedor experiente em WordPress e Git. Meu repositório do plugin '%s' não possui releases publicadas no GitHub. Crie um guia passo a passo conciso em Markdown para eu publicar a release 'v%s' desse plugin, explicando como gerar o arquivo ZIP correto (apenas a pasta do plugin, sem os arquivos de versionamento do Git) e como criar a Release no GitHub usando a interface web ou GitHub CLI. Inclua boas práticas de versionamento SemVer."
+msgstr "Actúa como un desarrollador experimentado en WordPress y Git. Mi repositorio del plugin '%s' no tiene releases publicadas en GitHub. Crea una guía paso a paso concisa en Markdown para que publique la release 'v%s' de este plugin, explicando cómo generar el archivo ZIP correcto (solo la carpeta del plugin, sin los archivos de control de versiones de Git) y cómo crear la Release en GitHub usando la interfaz web o GitHub CLI. Incluye buenas prácticas de versión de SemVer."
+
+msgid "Conectado"
+msgstr "Conectado"
+
+msgid "Sucesso"
+msgstr "Éxito"
+
+msgid "Ativação"
+msgstr "Activación"
+
+msgid "Conexão"
+msgstr "Conexión"
+
+msgid "Desconexão"
+msgstr "Desconexión"
+
+msgid "Instalação"
+msgstr "Instalación"
+
+msgid "Atualização"
+msgstr "Actualización"
+
+msgid "Cron Check"
+msgstr "Cron Check"
+
+msgid "Falha ao renomear o subdiretório do plugin para o slug canônico."
+msgstr "Error al renombrar el subdirectorio del plugin al slug canónico."
+
+msgid "Erro de comunicação ao listar raiz da branch %s: %s"
+msgstr "Error de comunicación al listar la raíz de la rama %s: %s"
+
+msgid "Falha HTTP %d ao listar raiz da branch %s."
+msgstr "Fallo HTTP %d al listar la raíz de la rama %s."
+
+msgid "Resposta inválida retornada para a raiz da branch %s."
+msgstr "Respuesta inválida devuelta para la raíz de la rama %s."
+
+msgid "Erro de comunicação ao listar subpasta %s: %s"
+msgstr "Error de comunicación al listar la subcarpeta %s: %s"
+
+msgid "Falha HTTP %d ao listar subpasta %s."
+msgstr "Fallo HTTP %d al listar la subcarpeta %s."
+
+msgid "Dados inválidos retornados para subpasta %s."
+msgstr "Datos inválidos devueltos para la subcarpeta %s."
+
+msgid "Erro de comunicação ao obter arquivo %s: %s"
+msgstr "Error de comunicación al obtener el archivo %s: %s"
+
+msgid "Falha HTTP %d ao obter arquivo %s."
+msgstr "Fallo HTTP %d al obtener el archivo %s."
+
+msgid "Conteúdo inválido ou formato inesperado para o arquivo %s."
+msgstr "Contenido inválido o formato inesperado para el archivo %s."
+
+msgid "O subdiretório especificado "%s" não foi encontrado no repositório."
+msgstr "El subdirectorio especificado "%s" no fue encontrado en el repositorio."
+
+msgid "Verificando estrutura do repositório..."
+msgstr "Verificando la estructura del repositorio..."
+
+msgid "Plugin <strong>%1$s</strong> (Versão %2$s) detectado automaticamente."
+msgstr "Plugin <strong>%1$s</strong> (Versión %2$s) detectado automáticamente."
+
+msgid "Nenhum plugin WordPress válido foi encontrado automaticamente. Selecione a pasta base e a origem abaixo para instalar."
+msgstr "No se encontró ningún plugin de WordPress válido automáticamente. Seleccione la carpeta base y el origen a continuación para instalar."
+
+msgid "Opções Avançadas"
+msgstr "Opciones Avanzadas"
+
+msgid "Origem (Release ou Ramo):"
+msgstr "Origen (Release o Rama):"
+
+msgid "Pasta Base do Plugin:"
+msgstr "Carpeta Base del Plugin:"
+
+msgid "Pasta Raiz"
+msgstr "Carpeta Raíz"
+
+msgid "Fechar"
+msgstr "Cerrar"
+
+msgid "Pasta: %s"
+msgstr "Carpeta: %s"
+
+msgid "Pasta base configurada para este plugin."
+msgstr "Carpeta base configurada para este plugin."
+
+msgid "Falha ao buscar a estrutura de pastas do repositório (%d)."
+msgstr "Fallo al buscar la estructura de carpetas del repositorio (%d)."
+
+msgid "Falha ao listar arquivos do repositório (%d)."
+msgstr "Fallo al listar los archivos del repositorio (%d)."
+
+msgid "Estrutura de arquivos inválida no repositório."
+msgstr "Estructura de archivos no válida en el repositorio."
+
+msgid "Nenhum plugin detectado automaticamente."
+msgstr "Ningún plugin detectado automáticamente."

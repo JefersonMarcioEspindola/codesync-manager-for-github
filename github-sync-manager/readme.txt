@@ -3,7 +3,7 @@ Contributors: JefersonMarcioEspindola
 Tags: github, sync, updates, plugin manager, private plugins, release updates
 Requires at least: 5.8
 Tested up to: 6.5
-Stable tag: 0.0.2
+Stable tag: 0.0.6
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -36,6 +36,28 @@ O sistema realiza uma comparação utilizando Semantic Versioning (SemVer) entre
 Absolutamente. O token é criptografado usando o algoritmo autenticado AES-256-GCM antes de ser salvo no banco de dados. A chave criptográfica é derivada de forma única com base em chaves privadas (`AUTH_KEY`/`SECURE_AUTH_KEY`) do seu arquivo `wp-config.php`, garantindo proteção de nível militar.
 
 == Changelog ==
+
+= 0.0.6 =
+* Adicionado pop-up (modal) de verificação e instalação de plugins.
+* Implementada a seleção manual de ramo/versão (ref) e de pasta base (subfolder) no repositório.
+* Adicionado badge indicador de subpastas configuradas na listagem de plugins gerenciados.
+* Adicionadas novas traduções em português, espanhol e inglês.
+
+= 0.0.5 =
+* Corrigido suporte a caminhos com espaços e caracteres especiais utilizando codificação rawurlencode compatível com a API do GitHub.
+* Corrigido bug de ordenação instável com usort no PHP 8+.
+* Aumentado o limite de subpastas varridas de 3 para 5 diretórios.
+* Adicionado logs detalhados de erros de API na aba Histórico de Logs.
+
+= 0.0.4 =
+* Adicionado suporte a instalação por branch como fallback quando não há releases publicadas no GitHub.
+* Adicionado indicador visual de branch nos cards de plugins gerenciados.
+* Adicionado botão para copiar prompt estruturado de IA para auxiliar na criação de releases no GitHub.
+
+= 0.0.3 =
+* Filtragem automática de repositórios na tela de Adicionar Plugin, exibindo apenas projetos PHP ou que possuam termos relacionados a plugins WordPress.
+* Adicionado banner informativo avisando sobre a filtragem.
+* Adicionado badge indicando a linguagem principal dos repositórios.
 
 = 0.0.2 =
 * Adicionado cabeçalhos de licenciamento GPLv2 or later para conformidade com o repositório oficial WordPress.org.

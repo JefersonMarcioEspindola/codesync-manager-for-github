@@ -77,7 +77,7 @@ jQuery(document).ready(function($) {
 			},
 			error: function() {
 				$connectSpinner.removeClass('is-active');
-				$connectError.text('Falha na requisição. Verifique sua conexão de rede.').fadeIn();
+				$connectError.text(gsm_ajax.texts.req_failed).fadeIn();
 				$connectForm.find('button[type="submit"]').prop('disabled', false);
 			}
 		});
@@ -89,7 +89,7 @@ jQuery(document).ready(function($) {
 	$disconnectBtn.on('click', function(e) {
 		e.preventDefault();
 
-		if (!confirm('Tem certeza de que deseja desconectar sua conta GitHub? Os plugins continuarão instalados, mas não receberão notificações de atualização.')) {
+		if (!confirm(gsm_ajax.texts.confirm_disconnect)) {
 			return;
 		}
 
@@ -114,7 +114,7 @@ jQuery(document).ready(function($) {
 			},
 			error: function() {
 				$disconnectSpinner.removeClass('is-active');
-				alert('Falha na comunicação.');
+				alert(gsm_ajax.texts.comm_fail);
 				$disconnectBtn.prop('disabled', false);
 			}
 		});
@@ -125,7 +125,7 @@ jQuery(document).ready(function($) {
 	/* ---------------------------------------------------- */
 	function loadGitHubRepositories() {
 		$reposSpinner.addClass('is-active');
-		$reposContainer.html('<p class="description">Carregando seus repositórios do GitHub...</p>');
+		$reposContainer.html('<p class="description">' + gsm_ajax.texts.loading_repos + '</p>');
 		$searchField.val('').prop('disabled', true);
 
 		$.ajax({
@@ -150,7 +150,7 @@ jQuery(document).ready(function($) {
 			error: function() {
 				$reposSpinner.removeClass('is-active');
 				$searchField.prop('disabled', false);
-				$reposContainer.html('<p class="gsm-error-message">Erro de conexão ao buscar repositórios.</p>');
+				$reposContainer.html('<p class="gsm-error-message">' + gsm_ajax.texts.repos_load_error + '</p>');
 			}
 		});
 	}
@@ -163,30 +163,34 @@ jQuery(document).ready(function($) {
 	// Render the list/grid of repositories
 	function renderRepositories(repos) {
 		if (repos.length === 0) {
-			$reposContainer.html('<p class="description">Nenhum repositório encontrado na sua conta do GitHub.</p>');
+			$reposContainer.html('<p class="description">' + gsm_ajax.texts.no_repos_found + '</p>');
 			return;
 		}
 
 		var html = '';
 		$.each(repos, function(idx, repo) {
 			var visibilityClass = repo.private ? 'gsm-private' : 'gsm-public';
-			var visibilityLabel = repo.private ? 'Privado' : 'Público';
+			var visibilityLabel = repo.private ? gsm_ajax.texts.private_lbl : gsm_ajax.texts.public_lbl;
 			var lastUpdated = new Date(repo.updated_at).toLocaleDateString();
 
-			var btnLabel = repo.is_managed ? 'Já Gerenciado' : 'Instalar Plugin';
+			var btnLabel = repo.is_managed ? gsm_ajax.texts.already_managed : gsm_ajax.texts.install_btn;
 			var btnClass = repo.is_managed ? 'button-disabled' : 'button-primary gsm-btn-install';
 			var btnAttr  = repo.is_managed ? 'disabled' : 'data-repo="' + repo.full_name + '"';
 
-			var desc = repo.description ? repo.description : 'Sem descrição no repositório.';
+			var desc = repo.description ? repo.description : gsm_ajax.texts.no_desc;
+			var langBadge = repo.language ? '<span class="gsm-repo-lang">' + repo.language + '</span>' : '';
 
 			html += '<div class="gsm-repo-card" data-name="' + repo.name.toLowerCase() + '" data-fullname="' + repo.full_name.toLowerCase() + '">';
 			html += '  <div class="gsm-repo-card-header">';
 			html += '    <h3 class="gsm-repo-card-title">' + repo.name + '</h3>';
-			html += '    <span class="gsm-visibility-badge ' + visibilityClass + '">' + visibilityLabel + '</span>';
+			html += '    <div class="gsm-repo-badges">';
+			html += '      ' + langBadge;
+			html += '      <span class="gsm-visibility-badge ' + visibilityClass + '">' + visibilityLabel + '</span>';
+			html += '    </div>';
 			html += '  </div>';
 			html += '  <p class="gsm-repo-desc" title="' + desc + '">' + desc + '</p>';
 			html += '  <div class="gsm-repo-footer">';
-			html += '    <span class="gsm-repo-date">Atualizado: ' + lastUpdated + '</span>';
+			html += '    <span class="gsm-repo-date">' + gsm_ajax.texts.updated_lbl.replace('%s', lastUpdated) + '</span>';
 			html += '    <button type="button" class="button button-small ' + btnClass + '" ' + btnAttr + '>' + btnLabel + '</button>';
 			html += '  </div>';
 			html += '</div>';
@@ -221,20 +225,207 @@ jQuery(document).ready(function($) {
 	/* ---------------------------------------------------- */
 	/* 6. Programmatic Installation                         */
 	/* ---------------------------------------------------- */
+	var $modal = $('#gsm-install-modal');
+	var $modalBody = $modal.find('.gsm-modal-body');
+	var $modalFooter = $modal.find('.gsm-modal-footer');
+	var installRepo = '';
+	var installIsDone = false;
+
+	function hideModal() {
+		$modal.removeClass('gsm-modal-open');
+		setTimeout(function() {
+			$modal.hide();
+			if (installIsDone) {
+				window.location.reload();
+			}
+		}, 250);
+	}
+
+	$modal.find('.gsm-modal-close').on('click', function(e) {
+		e.preventDefault();
+		hideModal();
+	});
+
+	$modal.find('.gsm-modal-backdrop').on('click', function() {
+		hideModal();
+	});
+
+	$modal.on('click', '.gsm-modal-btn-cancel', function(e) {
+		e.preventDefault();
+		hideModal();
+	});
+
+	$modal.on('click', '.gsm-modal-btn-close-done', function(e) {
+		e.preventDefault();
+		hideModal();
+	});
+
+	$(document).on('keydown', function(e) {
+		if (e.key === 'Escape' && $modal.hasClass('gsm-modal-open')) {
+			hideModal();
+		}
+	});
+
+	function verifyRepo(repo, ref) {
+		var $btnInstall = $modal.find('.gsm-modal-btn-install');
+		$btnInstall.prop('disabled', true);
+		
+		var isSwitching = !!ref;
+		if (isSwitching) {
+			$modalBody.find('select, input, button').prop('disabled', true);
+			$modalBody.find('.gsm-modal-options').css('opacity', '0.5');
+		} else {
+			$modalBody.html(
+				'<div class="gsm-modal-loading">' +
+				'  <div class="gsm-modal-spinner"></div>' +
+				'  <p>' + gsm_ajax.texts.checking_repo + '</p>' +
+				'</div>'
+			);
+		}
+
+		$.ajax({
+			url: gsm_ajax.url,
+			type: 'POST',
+			data: {
+				action: 'gsm_verify_repo',
+				repo: repo,
+				ref: ref || '',
+				nonce: gsm_ajax.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					var data = response.data;
+					var bodyHtml = '';
+
+					if (data.found) {
+						var bannerText = gsm_ajax.texts.plugin_detected
+							.replace('%1$s', data.plugin_name)
+							.replace('%2$s', data.version);
+						bodyHtml += '<div class="gsm-modal-success-banner">';
+						bodyHtml += '  <span class="dashicons dashicons-yes-alt"></span>';
+						bodyHtml += '  <p>' + bannerText + '</p>';
+						bodyHtml += '</div>';
+					} else {
+						bodyHtml += '<div class="gsm-modal-warning-banner">';
+						bodyHtml += '  <span class="dashicons dashicons-warning"></span>';
+						bodyHtml += '  <p>' + gsm_ajax.texts.plugin_not_detected + '</p>';
+						bodyHtml += '</div>';
+					}
+
+					var optionsVisible = !data.found;
+					if (isSwitching) {
+						optionsVisible = $modalBody.find('.gsm-modal-options').is(':visible');
+					}
+
+					bodyHtml += '<div class="gsm-modal-advanced-toggle">';
+					bodyHtml += '  <a href="#" class="gsm-toggle-advanced-link">';
+					bodyHtml += '    ' + gsm_ajax.texts.advanced_options + ' ';
+					bodyHtml += '    <span class="dashicons dashicons-arrow-' + (optionsVisible ? 'up' : 'down') + '-alt2"></span>';
+					bodyHtml += '  </a>';
+					bodyHtml += '</div>';
+
+					bodyHtml += '<div class="gsm-modal-options" style="' + (optionsVisible ? '' : 'display: none;') + '">';
+					
+					bodyHtml += '  <div class="gsm-modal-field">';
+					bodyHtml += '    <label for="gsm-modal-ref">' + gsm_ajax.texts.select_source + '</label>';
+					bodyHtml += '    <select id="gsm-modal-ref">';
+					if (data.sources && data.sources.length > 0) {
+						$.each(data.sources, function(idx, src) {
+							var isSelected = (ref && src.ref === ref) || (!ref && (src.ref === data.default_branch || idx === 0));
+							var selectedAttr = isSelected ? ' selected' : '';
+							bodyHtml += '<option value="' + src.ref + '"' + selectedAttr + '>' + src.name + '</option>';
+						});
+					} else {
+						bodyHtml += '<option value="' + data.default_branch + '" selected>' + data.default_branch + '</option>';
+					}
+					bodyHtml += '    </select>';
+					bodyHtml += '  </div>';
+
+					bodyHtml += '  <div class="gsm-modal-field">';
+					bodyHtml += '    <label for="gsm-modal-subfolder">' + gsm_ajax.texts.select_folder + '</label>';
+					bodyHtml += '    <select id="gsm-modal-subfolder">';
+					bodyHtml += '      <option value=""' + (data.default_path === '' ? ' selected' : '') + '>' + gsm_ajax.texts.root_folder + '</option>';
+					if (data.folders && data.folders.length > 0) {
+						$.each(data.folders, function(idx, folder) {
+							var selectedAttr = (data.default_path === folder) ? ' selected' : '';
+							bodyHtml += '<option value="' + folder + '"' + selectedAttr + '>' + folder + '</option>';
+						});
+					}
+					bodyHtml += '    </select>';
+					bodyHtml += '  </div>';
+
+					bodyHtml += '</div>';
+
+					$modalBody.html(bodyHtml);
+					$modalFooter.find('.gsm-modal-btn-install').prop('disabled', false);
+
+					$modalBody.find('.gsm-toggle-advanced-link').on('click', function(e) {
+						e.preventDefault();
+						var $link = $(this);
+						var $optionsPanel = $modalBody.find('.gsm-modal-options');
+						var $icon = $link.find('.dashicons');
+
+						$optionsPanel.slideToggle(200, function() {
+							if ($optionsPanel.is(':visible')) {
+								$icon.removeClass('dashicons-arrow-down-alt2').addClass('dashicons-arrow-up-alt2');
+							} else {
+								$icon.removeClass('dashicons-arrow-up-alt2').addClass('dashicons-arrow-down-alt2');
+							}
+						});
+					});
+
+					$modalBody.find('#gsm-modal-ref').on('change', function() {
+						var selectedRef = $(this).val();
+						verifyRepo(repo, selectedRef);
+					});
+				} else {
+					$modalBody.html('<div class="gsm-error-message">' + response.data.message + '</div>');
+				}
+			},
+			error: function() {
+				$modalBody.html('<div class="gsm-error-message">' + gsm_ajax.texts.scan_fail + '</div>');
+			}
+		});
+	}
+
 	$reposContainer.on('click', '.gsm-btn-install', function(e) {
 		e.preventDefault();
 		
-		var $btn = $(this);
-		var repo = $btn.data('repo');
+		var repo = $(this).data('repo');
 		if (!repo) return;
 
-		// Confirm
-		if (!confirm('Deseja baixar e instalar o plugin do repositório ' + repo + '?')) {
-			return;
-		}
+		installRepo = repo;
+		installIsDone = false;
 
-		$btn.prop('disabled', true).text(gsm_ajax.texts.installing);
-		$reposSpinner.addClass('is-active');
+		$modalFooter.html(
+			'<button type="button" class="button gsm-modal-btn-cancel">' + gsm_ajax.texts.close_btn + '</button>' +
+			'<button type="button" class="button button-primary gsm-modal-btn-install" disabled>' + gsm_ajax.texts.install_btn + '</button>'
+		);
+
+		$modal.show();
+		$modal[0].offsetHeight; // Trigger reflow for transition
+		$modal.addClass('gsm-modal-open');
+
+		verifyRepo(repo);
+	});
+
+	$modal.on('click', '.gsm-modal-btn-install', function(e) {
+		e.preventDefault();
+		
+		var $btn = $(this);
+		$btn.prop('disabled', true);
+		$modal.find('.gsm-modal-btn-cancel').prop('disabled', true);
+		$modal.find('.gsm-modal-close').css('pointer-events', 'none');
+
+		var selectedRef = $('#gsm-modal-ref').val() || '';
+		var selectedSubfolder = $('#gsm-modal-subfolder').val() || '';
+
+		$modalBody.html(
+			'<div class="gsm-modal-installing">' +
+			'  <div class="gsm-modal-spinner"></div>' +
+			'  <p>' + gsm_ajax.texts.installing + '</p>' +
+			'</div>'
+		);
 
 		$.ajax({
 			url: gsm_ajax.url,
@@ -242,32 +433,44 @@ jQuery(document).ready(function($) {
 			data: {
 				action: 'gsm_add_plugin',
 				action_type: 'install',
-				repo: repo,
+				repo: installRepo,
+				ref: selectedRef,
+				subfolder: selectedSubfolder,
 				nonce: gsm_ajax.nonce
 			},
 			success: function(response) {
-				$reposSpinner.removeClass('is-active');
+				$modal.find('.gsm-modal-close').css('pointer-events', 'auto');
 				if (response.success) {
-					// Show beautiful confirmation with link to activate
-					var confirmHtml = '<div class="gsm-card gsm-notice-success">';
-					confirmHtml += '  <h3>✅ Plugin Instalado com Sucesso!</h3>';
-					confirmHtml += '  <p>O plugin <strong>' + response.data.plugin_name + '</strong> (Versão ' + response.data.version + ') foi baixado e gravado localmente.</p>';
-					confirmHtml += '  <p>👉 <a href="' + response.data.activate_url + '" class="button button-primary">Ativar Plugin Agora</a></p>';
-					confirmHtml += '</div>';
-
-					$reposContainer.html(confirmHtml);
-
-					// Clear cache so it reloads table
+					installIsDone = true;
 					cachedRepos = [];
+
+					var doneHtml = '';
+					doneHtml += '<div class="gsm-modal-done">';
+					doneHtml += '  <div class="gsm-modal-done-icon">✓</div>';
+					doneHtml += '  <h4>' + gsm_ajax.texts.install_success_title + '</h4>';
+					doneHtml += '  <p>' + gsm_ajax.texts.install_success_msg.replace('%1$s', response.data.plugin_name).replace('%2$s', response.data.version) + '</p>';
+					doneHtml += '  <p><a href="' + response.data.activate_url + '" class="button button-primary button-hero gsm-modal-btn-activate">' + gsm_ajax.texts.activate_btn + '</a></p>';
+					doneHtml += '</div>';
+
+					$modalBody.html(doneHtml);
+					$modalFooter.html('<button type="button" class="button gsm-modal-btn-close-done">' + gsm_ajax.texts.close_btn + '</button>');
 				} else {
-					alert('Erro na Instalação: ' + response.data.message);
-					$btn.prop('disabled', false).text('Instalar Plugin');
+					$modalBody.html('<div class="gsm-error-message">' + gsm_ajax.texts.install_error.replace('%s', response.data.message) + '</div>');
+					
+					$modalFooter.html(
+						'<button type="button" class="button gsm-modal-btn-cancel">' + gsm_ajax.texts.close_btn + '</button>' +
+						'<button type="button" class="button button-primary gsm-modal-btn-install">' + gsm_ajax.texts.install_btn + '</button>'
+					);
 				}
 			},
 			error: function() {
-				$reposSpinner.removeClass('is-active');
-				alert('Falha na comunicação de rede ao tentar instalar o plugin.');
-				$btn.prop('disabled', false).text('Instalar Plugin');
+				$modal.find('.gsm-modal-close').css('pointer-events', 'auto');
+				$modalBody.html('<div class="gsm-error-message">' + gsm_ajax.texts.install_fail + '</div>');
+				
+				$modalFooter.html(
+					'<button type="button" class="button gsm-modal-btn-cancel">' + gsm_ajax.texts.close_btn + '</button>' +
+					'<button type="button" class="button button-primary gsm-modal-btn-install">' + gsm_ajax.texts.install_btn + '</button>'
+				);
 			}
 		});
 	});
@@ -302,7 +505,7 @@ jQuery(document).ready(function($) {
 					$row.fadeOut(300, function() {
 						$(this).remove();
 						if ($pluginsTableBody.find('tr').length === 0) {
-							$pluginsTableBody.html('<tr class="gsm-no-data-row"><td colspan="7">Nenhum plugin gerenciado ainda. Acesse a aba "Adicionar Plugin" para começar.</td></tr>');
+							$pluginsTableBody.html('<tr class="gsm-no-data-row"><td colspan="7">' + gsm_ajax.texts.no_managed + '</td></tr>');
 						}
 					});
 					
@@ -314,7 +517,7 @@ jQuery(document).ready(function($) {
 				}
 			},
 			error: function() {
-				alert('Erro ao excluir gerenciamento.');
+				alert(gsm_ajax.texts.remove_error);
 				$btn.prop('disabled', false);
 			}
 		});
@@ -352,14 +555,91 @@ jQuery(document).ready(function($) {
 					
 					alert(response.data.message);
 				} else {
-					alert('Erro ao verificar: ' + response.data.message);
+					alert(gsm_ajax.texts.scan_error.replace('%s', response.data.message));
 				}
 			},
 			error: function() {
 				$scanBtn.prop('disabled', false).removeClass('updating');
 				$scanSpinner.removeClass('is-active');
-				alert('Falha na comunicação de rede durante o escaneamento.');
+				alert(gsm_ajax.texts.scan_fail);
 			}
 		});
 	});
+
+	/* ---------------------------------------------------- */
+	/* 9. Copy AI Release Prompt                            */
+	/* ---------------------------------------------------- */
+	$(document).on('click', '.gsm-btn-copy-prompt', function(e) {
+		e.preventDefault();
+
+		var repo = $(this).data('repo');
+		var version = $(this).data('version') || '1.0.0';
+		if (!repo) return;
+
+		var promptText = gsm_ajax.texts.confirm_prompt.replace('%s', repo).replace('%s', version);
+
+		// Copy to clipboard
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(promptText).then(function() {
+				alert(gsm_ajax.texts.prompt_copied);
+			}, function() {
+				fallbackCopyTextToClipboard(promptText);
+			});
+		} else {
+			fallbackCopyTextToClipboard(promptText);
+		}
+	});
+
+	/* ---------------------------------------------------- */
+	/* 10. Save Language Setting                            */
+	/* ---------------------------------------------------- */
+	$(document).on('change', '#gsm_locale', function() {
+		var selectedLocale = $(this).val();
+		var $select = $(this);
+		$select.prop('disabled', true);
+		
+		$.ajax({
+			url: gsm_ajax.url,
+			type: 'POST',
+			data: {
+				action: 'gsm_save_locale',
+				locale: selectedLocale,
+				nonce: gsm_ajax.nonce
+			},
+			success: function(response) {
+				$select.prop('disabled', false);
+				if (response.success) {
+					window.location.reload();
+				} else {
+					alert(response.data.message);
+				}
+			},
+			error: function() {
+				$select.prop('disabled', false);
+				alert(gsm_ajax.texts.save_locale_error);
+			}
+		});
+	});
+
+	function fallbackCopyTextToClipboard(text) {
+		var textArea = document.createElement("textarea");
+		textArea.value = text;
+		textArea.style.position = "fixed"; // Avoid scrolling to bottom
+		document.body.appendChild(textArea);
+		textArea.focus();
+		textArea.select();
+
+		try {
+			var successful = document.execCommand('copy');
+			if (successful) {
+				alert(gsm_ajax.texts.prompt_copied);
+			} else {
+				alert(gsm_ajax.texts.prompt_copy_fail);
+			}
+		} catch (err) {
+			alert(gsm_ajax.texts.prompt_copy_fail);
+		}
+
+		document.body.removeChild(textArea);
+	}
 });
