@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Sync Manager for GitHub
- * Plugin URI: https://github.com/JefersonMarcioEspindola/github-sync-manager
+ * Plugin URI: https://github.com/JefersonMarcioEspindola/sync-manager-for-github
  * Description: Permite ao administrador do site instalar e manter atualizados outros plugins WordPress hospedados em repositórios do GitHub, públicos ou privados, usando as releases como fonte de verdade.
  * Version: 0.0.16
  * Author: Jeferson Espindola
- * Author URI: https://github.com/JefersonMarcioEspindola/github-sync-manager
+ * Author URI: https://github.com/JefersonMarcioEspindola/sync-manager-for-github
  * Text Domain: sync-manager-for-github
  * Domain Path: /languages
  * License: GPLv2 or later
