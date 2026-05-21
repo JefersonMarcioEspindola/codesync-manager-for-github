@@ -728,10 +728,16 @@ class GSM_Admin {
 			GSM_Updater::$currently_installing_repo      = $repo_slug;
 			GSM_Updater::$currently_installing_subfolder = $selected_subfolder;
 
+			// Force direct filesystem access — required for AJAX-based plugin installation
+			$gsm_fs_filter = function() { return 'direct'; };
+			add_filter( 'filesystem_method', $gsm_fs_filter, PHP_INT_MAX );
+
 			// Use silent/automatic skin
 			$skin     = new Automatic_Upgrader_Skin();
 			$upgrader = new Plugin_Upgrader( $skin );
-			$result   = $upgrader->install( $package_url );
+			$result   = $upgrader->install( $package_url, array( 'overwrite_package' => true ) );
+
+			remove_filter( 'filesystem_method', $gsm_fs_filter, PHP_INT_MAX );
 
 			// Re-initialize files and flush cache
 			wp_clean_plugins_cache();
@@ -744,9 +750,21 @@ class GSM_Admin {
 				wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 			}
 
-			if ( ! $result ) {
-				wp_send_json_error( array( 'message' => __( 'A instalação do plugin falhou. Verifique as permissões de gravação de arquivos.', 'github-sync-manager' ) ) );
+			// Capture any errors the skin collected
+			$skin_errors = $skin->get_errors();
+			if ( is_wp_error( $skin_errors ) && $skin_errors->get_error_message() ) {
+				wp_send_json_error( array( 'message' => $skin_errors->get_error_message() ) );
 			}
+
+			if ( ! $result ) {
+				$skin_messages = method_exists( $skin, 'get_upgrade_messages' ) ? $skin->get_upgrade_messages() : array();
+				$detail        = ! empty( $skin_messages ) ? implode( ' ', array_slice( $skin_messages, -3 ) ) : '';
+				error_log( 'GSM Install Failed. Repo: ' . $repo_slug . ' | Skin: ' . implode( ' | ', $skin_messages ) );
+				wp_send_json_error( array(
+					'message' => __( 'A instalação do plugin falhou. Se o problema persistir, adicione define(\'FS_METHOD\', \'direct\'); ao wp-config.php antes do require_once ABSPATH.', 'github-sync-manager' ) . ( $detail ? ' ' . $detail : '' ),
+				) );
+			}
+
 
 			// Locate the newly installed plugin directory and file using slug resolution code
 			$plugins = get_plugins();

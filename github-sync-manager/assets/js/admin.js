@@ -359,17 +359,15 @@ jQuery(document).ready(function($) {
 					bodyHtml += '        <span class="gsm-folder-trigger-chevron dashicons dashicons-arrow-down-alt2"></span>';
 					bodyHtml += '      </button>';
 
-					// Dropdown tree panel
-					bodyHtml += '      <div class="gsm-folder-dropdown" style="display:none;">';
-					bodyHtml += '        <ul class="gsm-folder-tree">';
+					var treeItemsHtml = '';
 
 					// Root option
 					var rootSel = (defPath === '') ? ' gsm-folder-item--selected' : '';
-					bodyHtml += '          <li class="gsm-folder-item gsm-folder-item--root' + rootSel + '" data-value="">';
-					bodyHtml += '            <span class="gsm-fi-icon">📂</span>';
-					bodyHtml += '            <span class="gsm-fi-name">' + gsm_ajax.texts.root_folder + '</span>';
-					if (defPath === '') { bodyHtml += '<span class="gsm-fi-check dashicons dashicons-yes"></span>'; }
-					bodyHtml += '          </li>';
+					treeItemsHtml += '<li class="gsm-folder-item gsm-folder-item--root' + rootSel + '" data-value="">';
+					treeItemsHtml += '  <span class="gsm-fi-icon">📂</span>';
+					treeItemsHtml += '  <span class="gsm-fi-name">' + gsm_ajax.texts.root_folder + '</span>';
+					if (defPath === '') { treeItemsHtml += '<span class="gsm-fi-check dashicons dashicons-yes"></span>'; }
+					treeItemsHtml += '</li>';
 
 					// Build tree from flat paths
 					var tree = {};
@@ -390,7 +388,6 @@ jQuery(document).ready(function($) {
 							var isSel = (defPath === path) ? ' gsm-folder-item--selected' : '';
 							var checkIcon = (defPath === path) ? '<span class="gsm-fi-check dashicons dashicons-yes"></span>' : '';
 							html += '<li class="gsm-folder-item' + isSel + '" data-value="' + path + '" data-depth="' + indent + '">';
-							// connector lines via CSS + depth class
 							for (var d = 0; d < indent; d++) {
 								html += '<span class="gsm-fi-indent"></span>';
 							}
@@ -404,10 +401,13 @@ jQuery(document).ready(function($) {
 						return html;
 					}
 
-					bodyHtml += renderTree(tree, 0);
-					bodyHtml += '        </ul>';
-					bodyHtml += '      </div>'; // .gsm-folder-dropdown
+					treeItemsHtml += renderTree(tree, 0);
+
+					bodyHtml += '      <div class="gsm-folder-dropdown" style="display:none;">';
+					bodyHtml += '        <ul class="gsm-folder-tree">' + treeItemsHtml + '</ul>';
+					bodyHtml += '      </div>';
 					bodyHtml += '    </div>'; // .gsm-folder-picker
+
 
 					// Info box
 					bodyHtml += '    <div class="gsm-info-box">';
@@ -440,66 +440,10 @@ jQuery(document).ready(function($) {
 					// ── Origin select change → reload verify ───────────────
 					$modalBody.find('#gsm-modal-ref').on('change', function() {
 						var selectedRef = $(this).val();
+						$('.gsm-folder-dropdown').hide();
+						$('.gsm-folder-trigger').attr('aria-expanded', 'false')
+							.find('.gsm-folder-trigger-chevron').removeClass('gsm-chevron-up');
 						verifyRepo(repo, selectedRef);
-					});
-
-					// ── Folder tree picker logic ───────────────────────────
-					$modalBody.on('click', '.gsm-folder-trigger', function(e) {
-						e.stopPropagation();
-						var $trigger  = $(this);
-						var $picker   = $trigger.closest('.gsm-folder-picker');
-						var $dropdown = $picker.find('.gsm-folder-dropdown');
-						var isOpen    = $trigger.attr('aria-expanded') === 'true';
-
-						// Close all other open pickers first
-						$('.gsm-folder-dropdown').not($dropdown).slideUp(150);
-						$('.gsm-folder-trigger[aria-expanded="true"]').not($trigger)
-							.attr('aria-expanded', 'false')
-							.find('.gsm-folder-trigger-chevron')
-							.removeClass('gsm-chevron-up');
-
-						if (isOpen) {
-							$dropdown.slideUp(150);
-							$trigger.attr('aria-expanded', 'false');
-							$trigger.find('.gsm-folder-trigger-chevron').removeClass('gsm-chevron-up');
-						} else {
-							$dropdown.slideDown(180);
-							$trigger.attr('aria-expanded', 'true');
-							$trigger.find('.gsm-folder-trigger-chevron').addClass('gsm-chevron-up');
-						}
-					});
-
-					$modalBody.on('click', '.gsm-folder-item', function(e) {
-						e.stopPropagation();
-						var $item    = $(this);
-						var newValue = $item.data('value');
-						var $picker  = $item.closest('.gsm-folder-picker');
-
-						// Update hidden input
-						$picker.closest('.gsm-modal-field').find('#gsm-modal-subfolder').val(newValue);
-
-						// Update selected state
-						$picker.find('.gsm-folder-item').removeClass('gsm-folder-item--selected')
-							.find('.gsm-fi-check').remove();
-						$item.addClass('gsm-folder-item--selected')
-							.append('<span class="gsm-fi-check dashicons dashicons-yes"></span>');
-
-						// Update trigger label
-						var label = newValue ? ('📁 ' + newValue) : ('📁 ' + gsm_ajax.texts.root_folder);
-						$picker.find('.gsm-folder-trigger-label').text(label);
-
-						// Close dropdown
-						$picker.find('.gsm-folder-dropdown').slideUp(150);
-						$picker.find('.gsm-folder-trigger').attr('aria-expanded', 'false')
-							.find('.gsm-folder-trigger-chevron').removeClass('gsm-chevron-up');
-					});
-
-					// Close picker when clicking outside
-					$(document).off('click.gsmFolderPicker').on('click.gsmFolderPicker', function() {
-						$('.gsm-folder-dropdown:visible').slideUp(150);
-						$('.gsm-folder-trigger[aria-expanded="true"]')
-							.attr('aria-expanded', 'false')
-							.find('.gsm-folder-trigger-chevron').removeClass('gsm-chevron-up');
 					});
 
 				} else {
@@ -511,6 +455,64 @@ jQuery(document).ready(function($) {
 			}
 		});
 	}
+
+	// Close inline dropdown when clicking outside the picker
+	$(document).on('click.gsmFolderClose', function(e) {
+		if (!$(e.target).closest('.gsm-folder-picker').length) {
+			$('.gsm-folder-dropdown').hide();
+			$('.gsm-folder-trigger').attr('aria-expanded', 'false')
+				.find('.gsm-folder-trigger-chevron').removeClass('gsm-chevron-up');
+		}
+	});
+
+	// Toggle inline dropdown on trigger click
+	$modal.on('click', '.gsm-folder-trigger', function(e) {
+		e.stopPropagation();
+		var $trigger  = $(this);
+		var $picker   = $trigger.closest('.gsm-folder-picker');
+		var $dropdown = $picker.find('.gsm-folder-dropdown');
+		var isOpen    = $trigger.attr('aria-expanded') === 'true';
+
+		if (isOpen) {
+			$dropdown.hide();
+			$trigger.attr('aria-expanded', 'false')
+				.find('.gsm-folder-trigger-chevron').removeClass('gsm-chevron-up');
+		} else {
+			$dropdown.show();
+			$trigger.attr('aria-expanded', 'true')
+				.find('.gsm-folder-trigger-chevron').addClass('gsm-chevron-up');
+		}
+	});
+
+	// Select folder item from inline dropdown
+	$modal.on('click', '.gsm-folder-item', function(e) {
+		e.stopPropagation();
+		var $item    = $(this);
+		var newValue = $item.data('value');
+		var $picker  = $item.closest('.gsm-folder-picker');
+		var $trigger = $picker.find('.gsm-folder-trigger');
+
+		$modalBody.find('#gsm-modal-subfolder').val(newValue);
+
+		$picker.find('.gsm-folder-item').removeClass('gsm-folder-item--selected')
+			.find('.gsm-fi-check').remove();
+		$item.addClass('gsm-folder-item--selected')
+			.append('<span class="gsm-fi-check dashicons dashicons-yes"></span>');
+
+		var label = newValue ? ('📁 ' + newValue) : ('📁 ' + gsm_ajax.texts.root_folder);
+		$trigger.find('.gsm-folder-trigger-label').text(label);
+
+		$picker.find('.gsm-folder-dropdown').hide();
+		$trigger.attr('aria-expanded', 'false')
+			.find('.gsm-folder-trigger-chevron').removeClass('gsm-chevron-up');
+	});
+
+	// Close dropdown when modal closes
+	$modal.on('click', '.gsm-modal-close, .gsm-modal-btn-cancel, .gsm-modal-btn-close-done', function() {
+		$('.gsm-folder-dropdown').hide();
+		$('.gsm-folder-trigger').attr('aria-expanded', 'false')
+			.find('.gsm-folder-trigger-chevron').removeClass('gsm-chevron-up');
+	});
 
 
 	$reposContainer.on('click', '.gsm-btn-install', function(e) {
