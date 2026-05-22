@@ -3,7 +3,7 @@ Contributors: JefersonMarcioEspindola
 Tags: github, plugin updater, private plugins, github releases, self-hosted
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -72,6 +72,10 @@ The only external communication is with the GitHub API (`api.github.com`) using 
 3. Activity log showing install and update history.
 
 == Changelog ==
+
+= 1.0.5 =
+* Fixed translation issues for all missing UI strings including the subdirectory/folder notice popup in English and Spanish.
+* Added official translation guidelines for developers.
 
 = 1.0.4 =
 * Fixed translation issue for Classic PAT and Fine-Grained PAT labels when running in English locale.
@@ -181,6 +185,9 @@ The only external communication is with the GitHub API (`api.github.com`) using 
 * Initial release with AES-256-GCM encryption, GitHub API manager, automatic WP-Cron checker, and admin dashboard.
 
 == Upgrade Notice ==
+
+= 1.0.5 =
+Translation fixes and subdirectory/folder notice UI localization.
 
 = 1.0.4 =
 Fixed translation issue for Classic PAT and Fine-Grained PAT labels in English mode.
