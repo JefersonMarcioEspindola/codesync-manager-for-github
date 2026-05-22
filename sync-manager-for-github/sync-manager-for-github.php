@@ -5,7 +5,7 @@
  * Description: A developer tool to manage, install, and auto-update custom WordPress plugins hosted on GitHub. Connect via a Personal Access Token and use GitHub releases as the source of truth for versioning — no manual ZIP uploads needed.
  * Version: 1.0.0
  * Author: Jeferson Espindola
- * Author URI: https://github.com/JefersonMarcioEspindola/sync-manager-for-github
+ * Author URI: https://github.com/JefersonMarcioEspindola
  * Text Domain: sync-manager-for-github
  * Domain Path: /languages
  * License: GPLv2 or later
