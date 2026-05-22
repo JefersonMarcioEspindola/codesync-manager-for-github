@@ -366,18 +366,47 @@ class GSM_Admin {
 			return;
 		}
 
+		$managed_changed = false;
 		foreach ( $managed as $repo => $data ) {
 			$plugin_file = isset( $data['plugin_file'] ) ? $data['plugin_file'] : '';
 			$plugin_name = dirname( $plugin_file );
 
 			$installed_version = '0.0.0';
-			if ( ! empty( $plugin_file ) && file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
-				$file_data = get_file_data( WP_PLUGIN_DIR . '/' . $plugin_file, array(
+
+			// If subfolder is set, scan that folder directly to get accurate name/version
+			// and self-heal a wrong stored plugin_file reference.
+			if ( ! empty( $data['subfolder'] ) ) {
+				$subfolder_name = basename( trim( $data['subfolder'], '/' ) );
+				$subfolder_path = WP_PLUGIN_DIR . '/' . $subfolder_name;
+				if ( is_dir( $subfolder_path ) ) {
+					$php_files = glob( $subfolder_path . '/*.php' );
+					if ( $php_files ) {
+						foreach ( $php_files as $php_file ) {
+							$fd = get_file_data( $php_file, array( 'Name' => 'Plugin Name', 'Version' => 'Version' ) );
+							if ( ! empty( $fd['Name'] ) ) {
+								$plugin_name       = $fd['Name'];
+								$installed_version = ! empty( $fd['Version'] ) ? $fd['Version'] : '0.0.0';
+								$corrected_file    = $subfolder_name . '/' . basename( $php_file );
+								if ( $corrected_file !== $plugin_file ) {
+									$plugin_file                        = $corrected_file;
+									$managed[ $repo ]['plugin_file']    = $corrected_file;
+									$managed_changed                    = true;
+								}
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			// Fallback: use stored plugin_file if subfolder scan did not resolve it
+			if ( '0.0.0' === $installed_version && ! empty( $plugin_file ) && file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
+				$file_data         = get_file_data( WP_PLUGIN_DIR . '/' . $plugin_file, array(
 					'Name'    => 'Plugin Name',
 					'Version' => 'Version',
 				) );
-				$installed_version = $file_data['Version'];
-				$plugin_name       = $file_data['Name'];
+				$installed_version = ! empty( $file_data['Version'] ) ? $file_data['Version'] : '0.0.0';
+				$plugin_name       = ! empty( $file_data['Name'] ) ? $file_data['Name'] : $plugin_name;
 			}
 
 			$status         = isset( $data['status'] ) ? $data['status'] : 'atualizado';
@@ -475,6 +504,11 @@ class GSM_Admin {
 				</div>
 			</div>
 			<?php
+		}
+
+		// Persist any self-healed plugin_file corrections
+		if ( $managed_changed ) {
+			GSM_Manager::update_option_no_autoload( GSM_Manager::OPTION_PLUGINS, $managed );
 		}
 	}
 
