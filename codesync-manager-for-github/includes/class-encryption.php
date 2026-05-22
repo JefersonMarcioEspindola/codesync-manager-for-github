@@ -54,8 +54,8 @@ class CODESYNC_Encryption {
 	 * @return string The derived key.
 	 */
 	private static function get_derived_key() {
-		$salt = defined( 'SECURE_AUTH_KEY' ) ? SECURE_AUTH_KEY : 'gsm-fallback-salt';
-		$key  = defined( 'AUTH_KEY' ) ? AUTH_KEY : 'gsm-fallback-key';
+		$salt = defined( 'SECURE_AUTH_KEY' ) ? SECURE_AUTH_KEY : 'codesync-fallback-salt';
+		$key  = defined( 'AUTH_KEY' ) ? AUTH_KEY : 'codesync-fallback-key';
 		return hash_hmac( 'sha256', $key, $salt, true );
 	}
 

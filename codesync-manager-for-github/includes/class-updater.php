@@ -502,7 +502,7 @@ class CODESYNC_Updater {
 			return $reply;
 		}
 
-		$backup_root = CODESYNC_Manager::get_secure_directory( 'gsm-backups' );
+		$backup_root = CODESYNC_Manager::get_secure_directory( 'codesync-backups' );
 		if ( is_wp_error( $backup_root ) ) {
 			return $backup_root;
 		}

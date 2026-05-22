@@ -3,7 +3,7 @@
  * Plugin Name: CodeSync Manager for GitHub
  * Plugin URI: https://github.com/JefersonMarcioEspindola/codesync-manager-for-github
  * Description: A developer tool to manage, install, and auto-update custom WordPress plugins hosted on GitHub. Connect via a Personal Access Token and use GitHub releases as the source of truth for versioning — no manual ZIP uploads needed.
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: Jeferson Espindola
  * Author URI: https://github.com/JefersonMarcioEspindola
  * Text Domain: codesync-manager-for-github
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Constant Definitions
  */
-define( 'CODESYNC_VERSION', '1.1.1' );
+define( 'CODESYNC_VERSION', '1.1.2' );
 define( 'CODESYNC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CODESYNC_FILE', __FILE__ );
 
@@ -81,8 +81,8 @@ function codesync_force_plugin_locale( $locale, $domain ) {
 register_activation_hook( CODESYNC_FILE, 'codesync_activate' );
 function codesync_activate() {
 	// Ensure secure directories are initialized
-	CODESYNC_Manager::get_secure_directory( 'gsm-temp' );
-	CODESYNC_Manager::get_secure_directory( 'gsm-backups' );
+	CODESYNC_Manager::get_secure_directory( 'codesync-temp' );
+	CODESYNC_Manager::get_secure_directory( 'codesync-backups' );
 
 	// Schedule the update checking task twicedaily
 	if ( ! wp_next_scheduled( 'codesync_cron_check_updates' ) ) {
@@ -102,12 +102,12 @@ function codesync_deactivate() {
 	wp_clear_scheduled_hook( 'codesync_cron_check_updates' );
 
 	// Wipe temp directories completely
-	$temp_dir = CODESYNC_Manager::get_secure_directory( 'gsm-temp' );
+	$temp_dir = CODESYNC_Manager::get_secure_directory( 'codesync-temp' );
 	if ( ! is_wp_error( $temp_dir ) && is_dir( $temp_dir ) ) {
 		CODESYNC_Manager::delete_directory_recursive( $temp_dir );
 	}
 
-	$backup_dir = CODESYNC_Manager::get_secure_directory( 'gsm-backups' );
+	$backup_dir = CODESYNC_Manager::get_secure_directory( 'codesync-backups' );
 	if ( ! is_wp_error( $backup_dir ) && is_dir( $backup_dir ) ) {
 		CODESYNC_Manager::delete_directory_recursive( $backup_dir );
 	}

@@ -87,7 +87,7 @@ class CODESYNC_Manager {
 	 * Creates and secures a directory in wp-content/uploads.
 	 * Adds .htaccess (Deny from all) and index.php (Silence is golden) to prevent direct web access.
 	 *
-	 * @param string $subfolder Directory name inside uploads (e.g. 'gsm-temp').
+	 * @param string $subfolder Directory name inside uploads (e.g. 'codesync-temp').
 	 * @return string|WP_Error Absolute path of the secure directory, or WP_Error on failure.
 	 */
 	public static function get_secure_directory( $subfolder ) {
@@ -185,7 +185,7 @@ class CODESYNC_Manager {
 	 * Deletes all plugin temporary files and backups older than 24 hours.
 	 */
 	public static function run_garbage_collector() {
-		$dirs = array( 'gsm-temp', 'gsm-backups' );
+		$dirs = array( 'codesync-temp', 'codesync-backups' );
 		foreach ( $dirs as $dir_name ) {
 			$dir_path = self::get_secure_directory( $dir_name );
 			if ( is_wp_error( $dir_path ) || ! is_dir( $dir_path ) ) {

@@ -63,7 +63,7 @@ class CODESYNC_Admin {
 		}
 
 		wp_enqueue_style(
-			'gsm-admin-style',
+			'codesync-admin-style',
 			plugins_url( 'assets/css/admin.css', dirname( __FILE__ ) ),
 			array(),
 			defined( 'CODESYNC_VERSION' ) ? CODESYNC_VERSION : '1.0.0'
@@ -78,7 +78,7 @@ class CODESYNC_Admin {
 		);
 
 		wp_enqueue_script(
-			'gsm-admin-script',
+			'codesync-admin-script',
 			plugins_url( 'assets/js/admin.js', dirname( __FILE__ ) ),
 			array( 'jquery', 'lucide' ),
 			defined( 'CODESYNC_VERSION' ) ? CODESYNC_VERSION : '1.0.0',
@@ -86,7 +86,7 @@ class CODESYNC_Admin {
 		);
 
 		// Localize parameters for use in JS file
-		wp_localize_script( 'gsm-admin-script', 'codesync_ajax', array(
+		wp_localize_script( 'codesync-admin-script', 'codesync_ajax', array(
 			'url'    => admin_url( 'admin-ajax.php' ),
 			'nonce'  => wp_create_nonce( 'codesync_admin_nonce' ),
 			'texts'  => array(
@@ -162,20 +162,20 @@ class CODESYNC_Admin {
 		$security_error  = is_wp_error( $security_status ) ? $security_status->get_error_message() : '';
 
 		?>
-		<div class="wrap gsm-wrap">
-			<div class="gsm-header-panel">
-				<h1 class="gsm-title">
-					<img src="<?php echo esc_url( plugins_url( 'assets/icon.png', dirname( __FILE__ ) ) ); ?>" alt="<?php esc_attr_e( 'CodeSync Manager for GitHub', 'codesync-manager-for-github' ); ?>" class="gsm-header-logo" />
+		<div class="wrap codesync-wrap">
+			<div class="codesync-header-panel">
+				<h1 class="codesync-title">
+					<img src="<?php echo esc_url( plugins_url( 'assets/icon.png', dirname( __FILE__ ) ) ); ?>" alt="<?php esc_attr_e( 'CodeSync Manager for GitHub', 'codesync-manager-for-github' ); ?>" class="codesync-header-logo" />
 					<?php esc_html_e( 'CodeSync Manager for GitHub', 'codesync-manager-for-github' ); ?>
 				</h1>
 				
 				<?php if ( $token_exists && is_array( $connected_user ) ) : ?>
-					<div class="gsm-user-badge">
-						<img src="<?php echo esc_url( $connected_user['avatar_url'] ); ?>" alt="Avatar" class="gsm-user-avatar" />
-						<div class="gsm-user-info">
-							<span class="gsm-username">@<?php echo esc_html( $connected_user['username'] ); ?></span>
-							<span class="gsm-pulse-badge">
-								<span class="gsm-pulse"></span>
+					<div class="codesync-user-badge">
+						<img src="<?php echo esc_url( $connected_user['avatar_url'] ); ?>" alt="Avatar" class="codesync-user-avatar" />
+						<div class="codesync-user-info">
+							<span class="codesync-username">@<?php echo esc_html( $connected_user['username'] ); ?></span>
+							<span class="codesync-pulse-badge">
+								<span class="codesync-pulse"></span>
 								<?php esc_html_e( 'Conectado', 'codesync-manager-for-github' ); ?>
 							</span>
 						</div>
@@ -184,18 +184,18 @@ class CODESYNC_Admin {
 			</div>
 
 			<?php if ( ! empty( $security_error ) ) : ?>
-				<div class="notice notice-error gsm-notice-blocking">
+				<div class="notice notice-error codesync-notice-blocking">
 					<p><strong><?php esc_html_e( 'Erro de Segurança:', 'codesync-manager-for-github' ); ?></strong> <?php echo esc_html( $security_error ); ?></p>
 				</div>
 			<?php else : ?>
 
 				<?php if ( ! $token_exists ) : ?>
 					<!-- Activation screen -->
-					<div class="gsm-card gsm-login-card">
+					<div class="codesync-card codesync-login-card">
 						<h2><?php esc_html_e( 'Conectar Conta GitHub', 'codesync-manager-for-github' ); ?></h2>
 						<p><?php esc_html_e( 'Para começar a gerenciar seus plugins hospedados no GitHub, conecte uma conta utilizando um Personal Access Token (PAT) com as devidas permissões.', 'codesync-manager-for-github' ); ?></p>
 						
-						<div class="gsm-help-box">
+						<div class="codesync-help-box">
 							<p><strong><?php esc_html_e( 'Qual tipo de token criar?', 'codesync-manager-for-github' ); ?></strong></p>
 							<ul>
 								<li><strong><?php esc_html_e( 'Classic PAT:', 'codesync-manager-for-github' ); ?></strong> <?php esc_html_e( 'Crie um token com o escopo ', 'codesync-manager-for-github' ); ?><code>repo</code> (<?php esc_html_e( 'para repositórios privados e públicos', 'codesync-manager-for-github' ); ?>) <?php esc_html_e( 'ou ', 'codesync-manager-for-github' ); ?><code>public_repo</code> (<?php esc_html_e( 'somente para públicos', 'codesync-manager-for-github' ); ?>).</li>
@@ -204,83 +204,83 @@ class CODESYNC_Admin {
 							<p>👉 <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Clique aqui para criar seu Token no GitHub', 'codesync-manager-for-github' ); ?></a></p>
 						</div>
 
-						<form id="gsm-connect-form">
-							<div class="gsm-form-group">
+						<form id="codesync-connect-form">
+							<div class="codesync-form-group">
 								<label for="codesync_pat_token"><strong><?php esc_html_e( 'GitHub Personal Access Token (PAT)', 'codesync-manager-for-github' ); ?></strong></label>
 								<input type="password" id="codesync_pat_token" name="codesync_pat_token" class="regular-text" required placeholder="github_pat_..." autocomplete="off" />
 							</div>
-							<div class="gsm-submit-btn-row">
+							<div class="codesync-submit-btn-row">
 								<button type="submit" class="button button-primary button-large"><?php esc_html_e( 'Conectar Conta', 'codesync-manager-for-github' ); ?></button>
-								<span class="spinner gsm-spinner"></span>
+								<span class="spinner codesync-spinner"></span>
 							</div>
-							<div class="gsm-error-message" style="display:none;"></div>
+							<div class="codesync-error-message" style="display:none;"></div>
 						</form>
 					</div>
 				<?php else : ?>
 					<!-- Admin core view -->
-					<h2 class="nav-tab-wrapper gsm-tabs-nav">
-						<a href="#gsm-tab-plugins" class="nav-tab nav-tab-active"><?php esc_html_e( 'Plugins Gerenciados', 'codesync-manager-for-github' ); ?></a>
-						<a href="#gsm-tab-add" class="nav-tab" id="gsm-trigger-add-tab"><?php esc_html_e( 'Adicionar Plugin', 'codesync-manager-for-github' ); ?></a>
-						<a href="#gsm-tab-logs" class="nav-tab"><?php esc_html_e( 'Histórico de Logs', 'codesync-manager-for-github' ); ?></a>
-						<a href="#gsm-tab-config" class="nav-tab"><?php esc_html_e( 'Configurações', 'codesync-manager-for-github' ); ?></a>
+					<h2 class="nav-tab-wrapper codesync-tabs-nav">
+						<a href="#codesync-tab-plugins" class="nav-tab nav-tab-active"><?php esc_html_e( 'Plugins Gerenciados', 'codesync-manager-for-github' ); ?></a>
+						<a href="#codesync-tab-add" class="nav-tab" id="codesync-trigger-add-tab"><?php esc_html_e( 'Adicionar Plugin', 'codesync-manager-for-github' ); ?></a>
+						<a href="#codesync-tab-logs" class="nav-tab"><?php esc_html_e( 'Histórico de Logs', 'codesync-manager-for-github' ); ?></a>
+						<a href="#codesync-tab-config" class="nav-tab"><?php esc_html_e( 'Configurações', 'codesync-manager-for-github' ); ?></a>
 					</h2>
 
 					<!-- Tab content: Plugins -->
-					<div id="gsm-tab-plugins" class="gsm-tab-content gsm-tab-active">
-						<div class="gsm-action-bar">
-							<button type="button" class="button button-primary" id="gsm-btn-scan-now">
-								<i data-lucide="search" class="gsm-icon"></i>
+					<div id="codesync-tab-plugins" class="codesync-tab-content codesync-tab-active">
+						<div class="codesync-action-bar">
+							<button type="button" class="button button-primary" id="codesync-btn-scan-now">
+								<i data-lucide="search" class="codesync-icon"></i>
 								<?php esc_html_e( 'Verificar atualizações agora', 'codesync-manager-for-github' ); ?>
 							</button>
-							<span class="spinner gsm-spinner" id="gsm-scan-spinner"></span>
+							<span class="spinner codesync-spinner" id="codesync-scan-spinner"></span>
 						</div>
 
-						<div class="gsm-plugins-cards" id="gsm-plugins-cards">
+						<div class="codesync-plugins-cards" id="codesync-plugins-cards">
 							<?php self::render_plugins_cards(); ?>
 						</div>
 					</div>
 
 					<!-- Tab content: Add Plugin -->
-					<div id="gsm-tab-add" class="gsm-tab-content">
-						<div class="gsm-info-notice" style="margin-bottom: 20px; margin-top: 0;">
-							<i data-lucide="info" class="gsm-icon"></i>
+					<div id="codesync-tab-add" class="codesync-tab-content">
+						<div class="codesync-info-notice" style="margin-bottom: 20px; margin-top: 0;">
+							<i data-lucide="info" class="codesync-icon"></i>
 							<p><?php esc_html_e( 'Exibindo apenas repositórios com código PHP principal ou com nome/descrição relacionados a plugins WordPress.', 'codesync-manager-for-github' ); ?></p>
 						</div>
 
-						<div class="gsm-filter-bar">
-							<input type="text" id="gsm-repo-search" placeholder="<?php esc_attr_e( 'Buscar repositório por nome...', 'codesync-manager-for-github' ); ?>" autocomplete="off" />
-							<button type="button" class="button" id="gsm-btn-reload-repos">
-								<i data-lucide="refresh-cw" class="gsm-icon"></i>
+						<div class="codesync-filter-bar">
+							<input type="text" id="codesync-repo-search" placeholder="<?php esc_attr_e( 'Buscar repositório por nome...', 'codesync-manager-for-github' ); ?>" autocomplete="off" />
+							<button type="button" class="button" id="codesync-btn-reload-repos">
+								<i data-lucide="refresh-cw" class="codesync-icon"></i>
 								<?php esc_html_e( 'Recarregar Repositórios', 'codesync-manager-for-github' ); ?>
 							</button>
-							<span class="spinner gsm-spinner" id="gsm-repos-spinner"></span>
+							<span class="spinner codesync-spinner" id="codesync-repos-spinner"></span>
 						</div>
 
-						<div class="gsm-repos-grid" id="gsm-repos-container">
+						<div class="codesync-repos-grid" id="codesync-repos-container">
 							<!-- Populated via JS/AJAX -->
 						</div>
 					</div>
 
 					<!-- Tab content: Logs -->
-					<div id="gsm-tab-logs" class="gsm-tab-content">
-						<div class="gsm-card gsm-table-card">
-							<div id="gsm-logs-table-wrapper">
+					<div id="codesync-tab-logs" class="codesync-tab-content">
+						<div class="codesync-card codesync-table-card">
+							<div id="codesync-logs-table-wrapper">
 								<?php self::render_logs_table(); ?>
 							</div>
 						</div>
 					</div>
 
 					<!-- Tab content: Settings/Config -->
-					<div id="gsm-tab-config" class="gsm-tab-content">
-						<div class="gsm-card gsm-settings-card">
+					<div id="codesync-tab-config" class="codesync-tab-content">
+						<div class="codesync-card codesync-settings-card">
 							<h2><?php esc_html_e( 'Configurações do Sync Manager', 'codesync-manager-for-github' ); ?></h2>
 							<table class="form-table" role="presentation">
 								<tbody>
 									<tr>
 										<th scope="row"><?php esc_html_e( 'Conta Conectada', 'codesync-manager-for-github' ); ?></th>
 										<td>
-											<div class="gsm-profile-detail">
-												<img src="<?php echo esc_url( $connected_user['avatar_url'] ); ?>" class="gsm-profile-avatar" alt="Avatar" />
+											<div class="codesync-profile-detail">
+												<img src="<?php echo esc_url( $connected_user['avatar_url'] ); ?>" class="codesync-profile-avatar" alt="Avatar" />
 												<div>
 													<strong>@<?php echo esc_html( $connected_user['username'] ); ?></strong>
 													<?php /* translators: %s: token type */ ?>
@@ -312,8 +312,8 @@ class CODESYNC_Admin {
 										<td>
 											<p><?php esc_html_e( 'O sistema verifica se há atualizações disponíveis para os plugins de forma automática duas vezes ao dia.', 'codesync-manager-for-github' ); ?></p>
 											
-											<div class="gsm-info-notice">
-												<i data-lucide="info" class="gsm-icon"></i>
+											<div class="codesync-info-notice">
+												<i data-lucide="info" class="codesync-icon"></i>
 												<p><em>“<?php esc_html_e( 'As verificações automáticas dependem de tráfego no site. Para sites de produção, recomenda-se desabilitar o WP-Cron no wp-config.php e agendar uma tarefa cron real no servidor chamando wp-cron.php.', 'codesync-manager-for-github' ); ?>”</em></p>
 											</div>
 										</td>
@@ -321,11 +321,11 @@ class CODESYNC_Admin {
 								</tbody>
 							</table>
 
-							<div class="gsm-settings-actions">
-								<button type="button" class="button button-link-delete" id="gsm-btn-disconnect">
+							<div class="codesync-settings-actions">
+								<button type="button" class="button button-link-delete" id="codesync-btn-disconnect">
 									<?php esc_html_e( 'Desconectar conta GitHub', 'codesync-manager-for-github' ); ?>
 								</button>
-								<span class="spinner gsm-spinner" id="gsm-disconnect-spinner"></span>
+								<span class="spinner codesync-spinner" id="codesync-disconnect-spinner"></span>
 							</div>
 						</div>
 					</div>
@@ -335,19 +335,19 @@ class CODESYNC_Admin {
 		</div>
 
 		<!-- Modal de Instalação e Configuração -->
-		<div id="gsm-install-modal" class="gsm-modal-wrapper" style="display: none;">
-			<div class="gsm-modal-backdrop"></div>
-			<div class="gsm-modal-container">
-				<div class="gsm-modal-header">
-					<h3 class="gsm-modal-title"><?php esc_html_e( 'Instalar Plugin', 'codesync-manager-for-github' ); ?></h3>
-					<button type="button" class="gsm-modal-close" aria-label="<?php esc_attr_e( 'Fechar', 'codesync-manager-for-github' ); ?>">&times;</button>
+		<div id="codesync-install-modal" class="codesync-modal-wrapper" style="display: none;">
+			<div class="codesync-modal-backdrop"></div>
+			<div class="codesync-modal-container">
+				<div class="codesync-modal-header">
+					<h3 class="codesync-modal-title"><?php esc_html_e( 'Instalar Plugin', 'codesync-manager-for-github' ); ?></h3>
+					<button type="button" class="codesync-modal-close" aria-label="<?php esc_attr_e( 'Fechar', 'codesync-manager-for-github' ); ?>">&times;</button>
 				</div>
-				<div class="gsm-modal-body">
+				<div class="codesync-modal-body">
 					<!-- Conteúdo dinâmico via JS -->
 				</div>
-				<div class="gsm-modal-footer">
-					<button type="button" class="button gsm-modal-btn-cancel"><?php esc_html_e( 'Cancelar', 'codesync-manager-for-github' ); ?></button>
-					<button type="button" class="button button-primary gsm-modal-btn-install" disabled><?php esc_html_e( 'Instalar', 'codesync-manager-for-github' ); ?></button>
+				<div class="codesync-modal-footer">
+					<button type="button" class="button codesync-modal-btn-cancel"><?php esc_html_e( 'Cancelar', 'codesync-manager-for-github' ); ?></button>
+					<button type="button" class="button button-primary codesync-modal-btn-install" disabled><?php esc_html_e( 'Instalar', 'codesync-manager-for-github' ); ?></button>
 				</div>
 			</div>
 		</div>
@@ -361,7 +361,7 @@ class CODESYNC_Admin {
 		$managed = get_option( CODESYNC_Manager::OPTION_PLUGINS, array() );
 		if ( empty( $managed ) || ! is_array( $managed ) ) {
 			?>
-			<p class="gsm-no-plugins-msg"><?php esc_html_e( 'Nenhum plugin gerenciado ainda. Acesse a aba "Adicionar Plugin" para começar.', 'codesync-manager-for-github' ); ?></p>
+			<p class="codesync-no-plugins-msg"><?php esc_html_e( 'Nenhum plugin gerenciado ainda. Acesse a aba "Adicionar Plugin" para começar.', 'codesync-manager-for-github' ); ?></p>
 			<?php
 			return;
 		}
@@ -424,52 +424,52 @@ class CODESYNC_Admin {
 			switch ( $status ) {
 				case 'atualizado':
 					$status_label = __( 'Atualizado', 'codesync-manager-for-github' );
-					$status_class = 'gsm-status-updated';
+					$status_class = 'codesync-status-updated';
 					break;
 				case 'atualizacao_disponivel':
 					$status_label = __( 'Atualização disponível', 'codesync-manager-for-github' );
-					$status_class = 'gsm-status-update';
+					$status_class = 'codesync-status-update';
 					break;
 				case 'indisponivel':
 					$status_label = __( 'Indisponível', 'codesync-manager-for-github' );
-					$status_class = 'gsm-status-unavailable';
+					$status_class = 'codesync-status-unavailable';
 					break;
 				case 'erro':
 				default:
 					$status_label = __( 'Erro', 'codesync-manager-for-github' );
-					$status_class = 'gsm-status-error';
+					$status_class = 'codesync-status-error';
 					break;
 			}
 
 			?>
-			<div class="gsm-plugin-card" data-repo="<?php echo esc_attr( $repo ); ?>">
-				<div class="gsm-plugin-card-header">
+			<div class="codesync-plugin-card" data-repo="<?php echo esc_attr( $repo ); ?>">
+				<div class="codesync-plugin-card-header">
 					<div>
-						<h3 class="gsm-plugin-card-title"><?php echo esc_html( $plugin_name ); ?></h3>
-						<a class="gsm-plugin-card-repo" href="<?php echo esc_url( 'https://github.com/' . $repo ); ?>" target="_blank" rel="noopener noreferrer">
-							<i data-lucide="external-link" class="gsm-icon"></i><?php echo esc_html( $repo ); ?>
+						<h3 class="codesync-plugin-card-title"><?php echo esc_html( $plugin_name ); ?></h3>
+						<a class="codesync-plugin-card-repo" href="<?php echo esc_url( 'https://github.com/' . $repo ); ?>" target="_blank" rel="noopener noreferrer">
+							<i data-lucide="external-link" class="codesync-icon"></i><?php echo esc_html( $repo ); ?>
 						</a>
 					</div>
-					<span class="gsm-status-badge <?php echo esc_attr( $status_class ); ?>">
+					<span class="codesync-status-badge <?php echo esc_attr( $status_class ); ?>">
 						<?php echo esc_html( $status_label ); ?>
 						<?php if ( 'erro' === $status && ! empty( $error_message ) ) : ?>
-							<i data-lucide="help-circle" class="gsm-icon gsm-tooltip-trigger" title="<?php echo esc_attr( $error_message ); ?>"></i>
+							<i data-lucide="help-circle" class="codesync-icon codesync-tooltip-trigger" title="<?php echo esc_attr( $error_message ); ?>"></i>
 						<?php endif; ?>
 					</span>
 				</div>
 
-				<div class="gsm-plugin-versions">
+				<div class="codesync-plugin-versions">
 					<span><?php esc_html_e( 'Instalado:', 'codesync-manager-for-github' ); ?> <code><?php echo esc_html( $installed_version ); ?></code></span>
 					<?php if ( $latest_version !== $installed_version ) : ?>
-						<span class="gsm-versions-arrow">→</span>
+						<span class="codesync-versions-arrow">→</span>
 						<span><?php esc_html_e( 'Disponível:', 'codesync-manager-for-github' ); ?> <code><?php echo esc_html( $latest_version ); ?></code></span>
 					<?php endif; ?>
 				</div>
 
 				<?php if ( ! empty( $data['is_branch'] ) || ! empty( $data['subfolder'] ) ) : ?>
-				<div class="gsm-plugin-card-tags">
+				<div class="codesync-plugin-card-tags">
 					<?php if ( ! empty( $data['is_branch'] ) ) : ?>
-						<span class="gsm-branch-label" title="<?php esc_attr_e( 'Instalado diretamente de uma branch, sem releases no GitHub.', 'codesync-manager-for-github' ); ?>">
+						<span class="codesync-branch-label" title="<?php esc_attr_e( 'Instalado diretamente de uma branch, sem releases no GitHub.', 'codesync-manager-for-github' ); ?>">
 							<?php
 							/* translators: %s: branch name */
 							printf( esc_html__( 'Ramo: %s', 'codesync-manager-for-github' ), esc_html( $data['branch_name'] ) );
@@ -477,7 +477,7 @@ class CODESYNC_Admin {
 						</span>
 					<?php endif; ?>
 					<?php if ( ! empty( $data['subfolder'] ) ) : ?>
-						<span class="gsm-subfolder-label" title="<?php esc_attr_e( 'Pasta base configurada para este plugin.', 'codesync-manager-for-github' ); ?>">
+						<span class="codesync-subfolder-label" title="<?php esc_attr_e( 'Pasta base configurada para este plugin.', 'codesync-manager-for-github' ); ?>">
 							<?php
 							/* translators: %s: subfolder path */
 							printf( esc_html__( 'Pasta: %s', 'codesync-manager-for-github' ), esc_html( $data['subfolder'] ) );
@@ -488,8 +488,8 @@ class CODESYNC_Admin {
 				<?php endif; ?>
 
 				<?php if ( ! empty( $last_checked ) ) : ?>
-				<p class="gsm-plugin-last-checked">
-					<i data-lucide="clock" class="gsm-icon"></i>
+				<p class="codesync-plugin-last-checked">
+					<i data-lucide="clock" class="codesync-icon"></i>
 					<?php
 					/* translators: %s: date and time */
 					printf( esc_html__( 'Última verificação: %s', 'codesync-manager-for-github' ), esc_html( date_i18n( 'd/m/Y H:i', strtotime( $last_checked ) ) ) );
@@ -497,12 +497,12 @@ class CODESYNC_Admin {
 				</p>
 				<?php endif; ?>
 
-				<div class="gsm-plugin-card-actions">
-					<button type="button" class="button button-primary gsm-btn-force-update" data-repo="<?php echo esc_attr( $repo ); ?>">
-						<i data-lucide="cloud-upload" class="gsm-icon"></i>
+				<div class="codesync-plugin-card-actions">
+					<button type="button" class="button button-primary codesync-btn-force-update" data-repo="<?php echo esc_attr( $repo ); ?>">
+						<i data-lucide="cloud-upload" class="codesync-icon"></i>
 						<?php esc_html_e( 'Atualizar', 'codesync-manager-for-github' ); ?>
 					</button>
-					<button type="button" class="button button-link-delete gsm-btn-remove" data-repo="<?php echo esc_attr( $repo ); ?>">
+					<button type="button" class="button button-link-delete codesync-btn-remove" data-repo="<?php echo esc_attr( $repo ); ?>">
 						<?php esc_html_e( 'Parar de gerenciar', 'codesync-manager-for-github' ); ?>
 					</button>
 				</div>
@@ -523,13 +523,13 @@ class CODESYNC_Admin {
 		$logs = get_option( CODESYNC_Manager::OPTION_LOGS, array() );
 		if ( empty( $logs ) || ! is_array( $logs ) ) {
 			?>
-			<p class="gsm-no-logs-msg"><?php esc_html_e( 'Nenhuma atividade registrada ainda.', 'codesync-manager-for-github' ); ?></p>
+			<p class="codesync-no-logs-msg"><?php esc_html_e( 'Nenhuma atividade registrada ainda.', 'codesync-manager-for-github' ); ?></p>
 			<?php
 			return;
 		}
 
 		?>
-		<table class="wp-list-table widefat fixed striped table-view-list gsm-logs-table">
+		<table class="wp-list-table widefat fixed striped table-view-list codesync-logs-table">
 			<thead>
 				<tr>
 					<th style="width: 160px;"><?php esc_html_e( 'Data/Hora', 'codesync-manager-for-github' ); ?></th>
@@ -541,7 +541,7 @@ class CODESYNC_Admin {
 			</thead>
 			<tbody>
 				<?php foreach ( $logs as $log ) :
-					$res_class = ( 'sucesso' === $log['result'] ) ? 'gsm-log-success' : 'gsm-log-error';
+					$res_class = ( 'sucesso' === $log['result'] ) ? 'codesync-log-success' : 'codesync-log-error';
 					
 					// Translate result label
 					$result_label = $log['result'];
@@ -577,9 +577,9 @@ class CODESYNC_Admin {
 					<tr>
 						<td><code><?php echo esc_html( date_i18n( 'd/m/Y H:i', strtotime( $log['timestamp'] ) ) ); ?></code></td>
 						<td><strong><?php echo esc_html( $log['repo'] ); ?></strong></td>
-						<td><span class="gsm-log-action-tag"><?php echo esc_html( mb_strtoupper( $action_label, 'UTF-8' ) ); ?></span></td>
-						<td><span class="gsm-status-badge <?php echo esc_attr( $res_class ); ?>"><?php echo esc_html( $result_label ); ?></span></td>
-						<td class="gsm-log-msg-cell"><?php echo esc_html( $log['message'] ); ?></td>
+						<td><span class="codesync-log-action-tag"><?php echo esc_html( mb_strtoupper( $action_label, 'UTF-8' ) ); ?></span></td>
+						<td><span class="codesync-status-badge <?php echo esc_attr( $res_class ); ?>"><?php echo esc_html( $result_label ); ?></span></td>
+						<td class="codesync-log-msg-cell"><?php echo esc_html( $log['message'] ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>
