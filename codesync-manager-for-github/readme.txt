@@ -1,9 +1,9 @@
-=== Sync Manager for GitHub ===
-Contributors: JefersonMarcioEspindola
+=== CodeSync Manager for GitHub ===
+Contributors: JefersonMarcioEspindola, jefersonespindola
 Tags: github, plugin updater, private plugins, github releases, self-hosted
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -65,6 +65,18 @@ Yes. If a repository has no releases, or you prefer to track a specific branch, 
 = Does this plugin send any data externally? =
 The only external communication is with the GitHub API (`api.github.com`) using your own access token. No data is sent to any other service.
 
+== External Services ==
+
+This plugin uses the GitHub API (api.github.com) as an external service to fetch information about repositories, releases, and branches. 
+
+When you connect your GitHub Personal Access Token (PAT), the plugin communicates directly with the GitHub API to authenticate your requests. This is necessary to access both your public and private repositories, and to download the plugin release assets directly to your WordPress installation.
+
+No personal data from your WordPress site users is sent. The only data transmitted is your configured GitHub Personal Access Token, the repository names, and standard WordPress HTTP request headers.
+
+This service is provided by GitHub, Inc.
+- [Terms of Service](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)
+- [Privacy Policy](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement)
+
 == Screenshots ==
 
 1. Main dashboard showing managed plugins as cards with version info and last-check date.
@@ -72,6 +84,9 @@ The only external communication is with the GitHub API (`api.github.com`) using 
 3. Activity log showing install and update history.
 
 == Changelog ==
+
+= 1.0.6 =
+* Renamed plugin to CodeSync Manager for GitHub and implemented comprehensive WP.org compliance fixes (prefixing, external services disclosure).
 
 = 1.0.5 =
 * Fixed translation issues for all missing UI strings including the subdirectory/folder notice popup in English and Spanish.
@@ -95,8 +110,8 @@ The only external communication is with the GitHub API (`api.github.com`) using 
 
 = 1.0.0 =
 * First stable release.
-* Renamed plugin to "Sync Manager for GitHub" for WordPress.org compliance.
-* Renamed plugin slug to sync-manager-for-github.
+* Renamed plugin to "CodeSync Manager for GitHub" for WordPress.org compliance.
+* Renamed plugin slug to codesync-manager-for-github.
 * Added plugin logo to admin header.
 * Fixed plugin name/version detection for subfolder-based plugins — now self-heals wrong stored references.
 * Removed Prompt Release button from plugin cards.
@@ -196,7 +211,7 @@ Fixed translation issue for Classic PAT and Fine-Grained PAT labels in English m
 Minor fix version that resolves language translation loading, button border-radius visual consistency, and repository language filtering logic.
 
 = 1.0.0 =
-First stable release. Renamed plugin slug to sync-manager-for-github — please reinstall if upgrading from a pre-1.0 version.
+First stable release. Renamed plugin slug to codesync-manager-for-github — please reinstall if upgrading from a pre-1.0 version.
 
 = 0.0.16 =
 WordPress.org compliance release. Removes native update-transient injection (updates are still tracked in the GitHub Sync dashboard). All filesystem operations now use the WordPress Filesystem API.

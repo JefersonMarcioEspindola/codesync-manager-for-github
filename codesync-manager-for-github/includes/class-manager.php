@@ -10,20 +10,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class GSM_Manager
+ * Class CODESYNC_Manager
  *
  * Manages database options, handles activity logs (max 100 entries, autoload=no),
  * creates and secures temporary/backup directories, and validates plugin rules.
  */
-class GSM_Manager {
+class CODESYNC_Manager {
 
 	/**
 	 * Options names.
 	 */
-	const OPTION_TOKEN      = 'gsm_encrypted_token';
-	const OPTION_USER       = 'gsm_connected_user';
-	const OPTION_PLUGINS    = 'gsm_managed_plugins';
-	const OPTION_LOGS       = 'gsm_activity_logs';
+	const OPTION_TOKEN      = 'codesync_encrypted_token';
+	const OPTION_USER       = 'codesync_connected_user';
+	const OPTION_PLUGINS    = 'codesync_managed_plugins';
+	const OPTION_LOGS       = 'codesync_activity_logs';
 
 	/**
 	 * Logs a message to the database log system.
@@ -93,7 +93,7 @@ class GSM_Manager {
 	public static function get_secure_directory( $subfolder ) {
 		$uploads = wp_upload_dir();
 		if ( ! empty( $uploads['error'] ) ) {
-			return new WP_Error( 'gsm_uploads_error', $uploads['error'] );
+			return new WP_Error( 'codesync_uploads_error', $uploads['error'] );
 		}
 
 		$dir_path = $uploads['basedir'] . '/' . sanitize_file_name( $subfolder );
@@ -101,9 +101,9 @@ class GSM_Manager {
 		if ( ! file_exists( $dir_path ) ) {
 			if ( ! wp_mkdir_p( $dir_path ) ) {
 				return new WP_Error(
-					'gsm_dir_creation_failed',
+					'codesync_dir_creation_failed',
 					/* translators: %s: directory name */
-					sprintf( __( 'Falha ao criar o diretório seguro: %s.', 'sync-manager-for-github' ), $subfolder )
+					sprintf( __( 'Falha ao criar o diretório seguro: %s.', 'codesync-manager-for-github' ), $subfolder )
 				);
 			}
 		}
@@ -171,10 +171,10 @@ class GSM_Manager {
 		// Prevent adding this plugin itself
 		$repo_slug = strtolower( trim( $repo_slug ) );
 
-		if ( false !== strpos( $repo_slug, 'sync-manager-for-github' ) ) {
+		if ( false !== strpos( $repo_slug, 'codesync-manager-for-github' ) ) {
 			return new WP_Error(
-				'gsm_blocked_self_management',
-				__( 'Não é permitido gerenciar este próprio plugin através do GitHub Sync Manager para evitar conflitos de atualização.', 'sync-manager-for-github' )
+				'codesync_blocked_self_management',
+				__( 'Não é permitido gerenciar este próprio plugin através do GitHub Sync Manager para evitar conflitos de atualização.', 'codesync-manager-for-github' )
 			);
 		}
 

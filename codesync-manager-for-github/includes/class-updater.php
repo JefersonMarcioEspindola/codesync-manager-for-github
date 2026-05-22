@@ -10,12 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class GSM_Updater
+ * Class CODESYNC_Updater
  *
  * Integrates with WordPress update transients, intercepts downloads, validates zip packages,
  * resolves canonical plugin slugs dynamically, and manages recursive folder backups/restoration.
  */
-class GSM_Updater {
+class CODESYNC_Updater {
 
 	/**
 	 * Tracks the repository currently being installed via the admin panel.
@@ -69,27 +69,27 @@ class GSM_Updater {
 			return $transient;
 		}
 
-		$token = get_option( GSM_Manager::OPTION_TOKEN );
+		$token = get_option( CODESYNC_Manager::OPTION_TOKEN );
 		if ( empty( $token ) ) {
 			return $transient;
 		}
 
-		$security_check = GSM_Encryption::check_security_keys();
+		$security_check = CODESYNC_Encryption::check_security_keys();
 		if ( is_wp_error( $security_check ) ) {
 			return $transient; // Cannot decrypt
 		}
 
-		$decrypted_token = GSM_Encryption::decrypt( $token );
+		$decrypted_token = CODESYNC_Encryption::decrypt( $token );
 		if ( is_wp_error( $decrypted_token ) ) {
 			return $transient;
 		}
 
-		$managed_plugins = get_option( GSM_Manager::OPTION_PLUGINS, array() );
+		$managed_plugins = get_option( CODESYNC_Manager::OPTION_PLUGINS, array() );
 		if ( empty( $managed_plugins ) || ! is_array( $managed_plugins ) ) {
 			return $transient;
 		}
 
-		$api = new GSM_GitHub_API( $decrypted_token );
+		$api = new CODESYNC_GitHub_API( $decrypted_token );
 
 		foreach ( $managed_plugins as $repo_slug => $data ) {
 			$plugin_file = isset( $data['plugin_file'] ) ? $data['plugin_file'] : '';
@@ -124,7 +124,7 @@ class GSM_Updater {
 				// Record error status but do not break page load
 				$managed_plugins[ $repo_slug ]['status']        = 'erro';
 				$managed_plugins[ $repo_slug ]['error_message'] = $releases->get_error_message();
-				GSM_Manager::update_option_no_autoload( GSM_Manager::OPTION_PLUGINS, $managed_plugins );
+				CODESYNC_Manager::update_option_no_autoload( CODESYNC_Manager::OPTION_PLUGINS, $managed_plugins );
 				continue;
 			}
 
@@ -170,7 +170,7 @@ class GSM_Updater {
 					$managed_plugins[ $repo_slug ]['status']        = 'atualizacao_disponivel';
 					$managed_plugins[ $repo_slug ]['latest_version'] = $latest_version;
 					$managed_plugins[ $repo_slug ]['error_message'] = '';
-					GSM_Manager::update_option_no_autoload( GSM_Manager::OPTION_PLUGINS, $managed_plugins );
+					CODESYNC_Manager::update_option_no_autoload( CODESYNC_Manager::OPTION_PLUGINS, $managed_plugins );
 				}
 			} else {
 				// Update managed status to updated
@@ -178,7 +178,7 @@ class GSM_Updater {
 					$managed_plugins[ $repo_slug ]['status']        = 'atualizado';
 					$managed_plugins[ $repo_slug ]['latest_version'] = $latest_version;
 					$managed_plugins[ $repo_slug ]['error_message'] = '';
-					GSM_Manager::update_option_no_autoload( GSM_Manager::OPTION_PLUGINS, $managed_plugins );
+					CODESYNC_Manager::update_option_no_autoload( CODESYNC_Manager::OPTION_PLUGINS, $managed_plugins );
 				}
 			}
 		}
@@ -199,7 +199,7 @@ class GSM_Updater {
 		// Identify if this package is a GitHub URL downloaded via our plugin
 		$is_gsm = false;
 		if ( ! empty( $hook_extra['plugin'] ) ) {
-			$managed_plugins = get_option( GSM_Manager::OPTION_PLUGINS, array() );
+			$managed_plugins = get_option( CODESYNC_Manager::OPTION_PLUGINS, array() );
 			foreach ( $managed_plugins as $slug => $data ) {
 				if ( $data['plugin_file'] === $hook_extra['plugin'] ) {
 					$is_gsm = true;
@@ -221,27 +221,27 @@ class GSM_Updater {
 			return $reply;
 		}
 
-		$token = get_option( GSM_Manager::OPTION_TOKEN );
+		$token = get_option( CODESYNC_Manager::OPTION_TOKEN );
 		if ( empty( $token ) ) {
-			return new WP_Error( 'gsm_missing_token', __( 'Não foi possível baixar o plugin: Token GitHub ausente.', 'sync-manager-for-github' ) );
+			return new WP_Error( 'codesync_missing_token', __( 'Não foi possível baixar o plugin: Token GitHub ausente.', 'codesync-manager-for-github' ) );
 		}
 
-		$decrypted_token = GSM_Encryption::decrypt( $token );
+		$decrypted_token = CODESYNC_Encryption::decrypt( $token );
 		if ( is_wp_error( $decrypted_token ) ) {
 			return $decrypted_token;
 		}
 
-		$api = new GSM_GitHub_API( $decrypted_token );
+		$api = new CODESYNC_GitHub_API( $decrypted_token );
 
 		// Secure download
 		$tmp_file = $api->download_package( $package );
 		if ( is_wp_error( $tmp_file ) ) {
-			GSM_Manager::log(
+			CODESYNC_Manager::log(
 				! empty( self::$currently_installing_repo ) ? self::$currently_installing_repo : 'sistema',
 				'download',
 				'erro',
 				/* translators: %s: error message */
-				sprintf( __( 'Falha ao baixar o pacote do GitHub: %s', 'sync-manager-for-github' ), $tmp_file->get_error_message() )
+				sprintf( __( 'Falha ao baixar o pacote do GitHub: %s', 'codesync-manager-for-github' ), $tmp_file->get_error_message() )
 			);
 			return $tmp_file;
 		}
@@ -250,7 +250,7 @@ class GSM_Updater {
 		$validation = self::validate_plugin_zip( $tmp_file );
 		if ( is_wp_error( $validation ) ) {
 			wp_delete_file( $tmp_file );
-			GSM_Manager::log(
+			CODESYNC_Manager::log(
 				! empty( self::$currently_installing_repo ) ? self::$currently_installing_repo : 'sistema',
 				'validacao_zip',
 				'erro',
@@ -293,14 +293,14 @@ class GSM_Updater {
 
 			if ( ! $has_plugin_header ) {
 				return new WP_Error(
-					'gsm_invalid_plugin_zip',
-					__( 'O ZIP baixado não contém um plugin WordPress válido (cabeçalho "Plugin Name:" ausente).', 'sync-manager-for-github' )
+					'codesync_invalid_plugin_zip',
+					__( 'O ZIP baixado não contém um plugin WordPress válido (cabeçalho "Plugin Name:" ausente).', 'codesync-manager-for-github' )
 				);
 			}
 		} else {
 			return new WP_Error(
-				'gsm_zip_open_failed',
-				__( 'Não foi possível abrir o ZIP baixado.', 'sync-manager-for-github' )
+				'codesync_zip_open_failed',
+				__( 'Não foi possível abrir o ZIP baixado.', 'codesync-manager-for-github' )
 			);
 		}
 
@@ -321,7 +321,7 @@ class GSM_Updater {
 		// Verify if it's one of our plugins
 		$is_gsm = false;
 		if ( ! empty( $hook_extra['plugin'] ) ) {
-			$managed_plugins = get_option( GSM_Manager::OPTION_PLUGINS, array() );
+			$managed_plugins = get_option( CODESYNC_Manager::OPTION_PLUGINS, array() );
 			foreach ( $managed_plugins as $slug => $data ) {
 				if ( $data['plugin_file'] === $hook_extra['plugin'] ) {
 					$is_gsm = true;
@@ -349,7 +349,7 @@ class GSM_Updater {
 		if ( ! empty( self::$currently_installing_subfolder ) ) {
 			$subfolder = self::$currently_installing_subfolder;
 		} else {
-			$managed_plugins = get_option( GSM_Manager::OPTION_PLUGINS, array() );
+			$managed_plugins = get_option( CODESYNC_Manager::OPTION_PLUGINS, array() );
 			if ( is_array( $managed_plugins ) ) {
 				foreach ( $managed_plugins as $slug => $data ) {
 					if ( isset( $data['plugin_file'] ) && ! empty( $hook_extra['plugin'] ) && $data['plugin_file'] === $hook_extra['plugin'] ) {
@@ -367,9 +367,9 @@ class GSM_Updater {
 			$search_dir = $source_dir . trim( $subfolder, '/' );
 			if ( ! is_dir( $search_dir ) ) {
 				return new WP_Error(
-					'gsm_subfolder_not_found',
+					'codesync_subfolder_not_found',
 					/* translators: %s: subfolder path */
-					sprintf( __( 'O subdiretório especificado "%s" não foi encontrado no repositório.', 'sync-manager-for-github' ), $subfolder )
+					sprintf( __( 'O subdiretório especificado "%s" não foi encontrado no repositório.', 'codesync-manager-for-github' ), $subfolder )
 				);
 			}
 			$search_dir = trailingslashit( $search_dir );
@@ -400,8 +400,8 @@ class GSM_Updater {
 
 		if ( empty( $main_file ) ) {
 			return new WP_Error(
-				'gsm_slug_resolution_failed',
-				__( 'Não foi possível encontrar um arquivo PHP de plugin válido dentro do ZIP extraído.', 'sync-manager-for-github' )
+				'codesync_slug_resolution_failed',
+				__( 'Não foi possível encontrar um arquivo PHP de plugin válido dentro do ZIP extraído.', 'codesync-manager-for-github' )
 			);
 		}
 
@@ -412,8 +412,8 @@ class GSM_Updater {
 
 		if ( empty( $canonical_slug ) ) {
 			return new WP_Error(
-				'gsm_invalid_slug',
-				__( 'Falha ao resolver um slug válido para o plugin.', 'sync-manager-for-github' )
+				'codesync_invalid_slug',
+				__( 'Falha ao resolver um slug válido para o plugin.', 'codesync-manager-for-github' )
 			);
 		}
 
@@ -424,7 +424,7 @@ class GSM_Updater {
 
 		if ( file_exists( $corrected_source ) ) {
 			// Delete existing destination folder in temp to avoid collision
-			GSM_Manager::delete_directory_recursive( $corrected_source );
+			CODESYNC_Manager::delete_directory_recursive( $corrected_source );
 		}
 
 		global $wp_filesystem;
@@ -439,8 +439,8 @@ class GSM_Updater {
 			// Plugin is nested inside a subdirectory. Move the subdirectory to the target destination.
 			if ( ! $wp_filesystem->move( $plugin_root_dir, $corrected_source ) ) {
 				return new WP_Error(
-					'gsm_rename_nested_failed',
-					__( 'Falha ao renomear o subdiretório do plugin para o slug canônico.', 'sync-manager-for-github' )
+					'codesync_rename_nested_failed',
+					__( 'Falha ao renomear o subdiretório do plugin para o slug canônico.', 'codesync-manager-for-github' )
 				);
 			}
 		} else {
@@ -448,8 +448,8 @@ class GSM_Updater {
 			if ( $source_path !== $corrected_source ) {
 				if ( ! $wp_filesystem->move( $source_path, $corrected_source ) ) {
 					return new WP_Error(
-						'gsm_rename_failed',
-						__( 'Falha ao renomear o diretório temporário do plugin para o slug canônico.', 'sync-manager-for-github' )
+						'codesync_rename_failed',
+						__( 'Falha ao renomear o diretório temporário do plugin para o slug canônico.', 'codesync-manager-for-github' )
 					);
 				}
 			}
@@ -475,7 +475,7 @@ class GSM_Updater {
 		}
 
 		$plugin_file = $hook_extra['plugin'];
-		$managed_plugins = get_option( GSM_Manager::OPTION_PLUGINS, array() );
+		$managed_plugins = get_option( CODESYNC_Manager::OPTION_PLUGINS, array() );
 
 		$is_gsm = false;
 		$repo_slug = '';
@@ -502,7 +502,7 @@ class GSM_Updater {
 			return $reply;
 		}
 
-		$backup_root = GSM_Manager::get_secure_directory( 'gsm-backups' );
+		$backup_root = CODESYNC_Manager::get_secure_directory( 'gsm-backups' );
 		if ( is_wp_error( $backup_root ) ) {
 			return $backup_root;
 		}
@@ -511,7 +511,7 @@ class GSM_Updater {
 
 		// Remove any existing stale backup folder
 		if ( file_exists( $backup_path ) ) {
-			GSM_Manager::delete_directory_recursive( $backup_path );
+			CODESYNC_Manager::delete_directory_recursive( $backup_path );
 		}
 
 		// Copy folder recursively
@@ -519,8 +519,8 @@ class GSM_Updater {
 
 		if ( ! $copy_status ) {
 			return new WP_Error(
-				'gsm_backup_failed',
-				__( 'Falha ao criar cópia de segurança do plugin existente. Atualização cancelada por segurança.', 'sync-manager-for-github' )
+				'codesync_backup_failed',
+				__( 'Falha ao criar cópia de segurança do plugin existente. Atualização cancelada por segurança.', 'codesync-manager-for-github' )
 			);
 		}
 
@@ -556,39 +556,39 @@ class GSM_Updater {
 			if ( is_dir( $backup['backup_path'] ) ) {
 				// Delete corrupted folder in plugins
 				if ( is_dir( $backup['src_path'] ) ) {
-					GSM_Manager::delete_directory_recursive( $backup['src_path'] );
+					CODESYNC_Manager::delete_directory_recursive( $backup['src_path'] );
 				}
 
 				// Restore from backup path
 				$restore = self::copy_directory( $backup['backup_path'], $backup['src_path'] );
-				GSM_Manager::delete_directory_recursive( $backup['backup_path'] );
+				CODESYNC_Manager::delete_directory_recursive( $backup['backup_path'] );
 
 				if ( $restore ) {
-					GSM_Manager::log(
+					CODESYNC_Manager::log(
 						$backup['repo'],
 						'restauracao',
 						'sucesso',
-						__( 'Atualização falhou. Backup restaurado com sucesso.', 'sync-manager-for-github' )
+						__( 'Atualização falhou. Backup restaurado com sucesso.', 'codesync-manager-for-github' )
 					);
 				} else {
-					GSM_Manager::log(
+					CODESYNC_Manager::log(
 						$backup['repo'],
 						'restauracao',
 						'erro',
-						__( 'Atualização falhou e houve erro ao restaurar o backup. O plugin pode ter sido removido.', 'sync-manager-for-github' )
+						__( 'Atualização falhou e houve erro ao restaurar o backup. O plugin pode ter sido removido.', 'codesync-manager-for-github' )
 					);
 				}
 			}
 		} else {
 			// SUCCESS - Delete backup directory to conserve space
 			if ( is_dir( $backup['backup_path'] ) ) {
-				GSM_Manager::delete_directory_recursive( $backup['backup_path'] );
+				CODESYNC_Manager::delete_directory_recursive( $backup['backup_path'] );
 			}
-			GSM_Manager::log(
+			CODESYNC_Manager::log(
 				$backup['repo'],
 				'atualizacao',
 				'sucesso',
-				__( 'Plugin atualizado com sucesso usando o fluxo nativo.', 'sync-manager-for-github' )
+				__( 'Plugin atualizado com sucesso usando o fluxo nativo.', 'codesync-manager-for-github' )
 			);
 		}
 

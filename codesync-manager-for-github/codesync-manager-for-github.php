@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: Sync Manager for GitHub
- * Plugin URI: https://github.com/JefersonMarcioEspindola/sync-manager-for-github
+ * Plugin Name: CodeSync Manager for GitHub
+ * Plugin URI: https://github.com/JefersonMarcioEspindola/codesync-manager-for-github
  * Description: A developer tool to manage, install, and auto-update custom WordPress plugins hosted on GitHub. Connect via a Personal Access Token and use GitHub releases as the source of truth for versioning — no manual ZIP uploads needed.
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: Jeferson Espindola
  * Author URI: https://github.com/JefersonMarcioEspindola
- * Text Domain: sync-manager-for-github
+ * Text Domain: codesync-manager-for-github
  * Domain Path: /languages
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,21 +21,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Constant Definitions
  */
-define( 'GSM_VERSION', '1.0.5' );
-define( 'GSM_PATH', plugin_dir_path( __FILE__ ) );
-define( 'GSM_FILE', __FILE__ );
+define( 'CODESYNC_VERSION', '1.0.6' );
+define( 'CODESYNC_PATH', plugin_dir_path( __FILE__ ) );
+define( 'CODESYNC_FILE', __FILE__ );
 
 /**
  * Simple Autoloader
  */
 spl_autoload_register( function( $class_name ) {
 	// Only load our classes
-	if ( 0 !== strpos( $class_name, 'GSM_' ) ) {
+	if ( 0 !== strpos( $class_name, 'CODESYNC_' ) ) {
 		return;
 	}
 
 	$file_name = 'class-' . strtolower( str_replace( '_', '-', substr( $class_name, 4 ) ) ) . '.php';
-	$file_path = GSM_PATH . 'includes/' . $file_name;
+	$file_path = CODESYNC_PATH . 'includes/' . $file_name;
 
 	if ( file_exists( $file_path ) ) {
 		require_once $file_path;
@@ -45,29 +45,29 @@ spl_autoload_register( function( $class_name ) {
 /**
  * Core Initialization Function
  */
-function gsm_init() {
+function codesync_init() {
 	// Load translations
-	load_plugin_textdomain( 'sync-manager-for-github', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	load_plugin_textdomain( 'codesync-manager-for-github', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
 	// Initialize core components
-	GSM_Updater::init();
+	CODESYNC_Updater::init();
 
 	if ( is_admin() ) {
-		GSM_Admin::init();
+		CODESYNC_Admin::init();
 	}
 
 	// Hook into scheduled cron event
-	add_action( 'gsm_cron_check_updates', 'gsm_cron_check_updates_callback' );
+	add_action( 'codesync_cron_check_updates', 'codesync_cron_check_updates_callback' );
 }
-add_action( 'plugins_loaded', 'gsm_init' );
+add_action( 'plugins_loaded', 'codesync_init' );
 
 /**
  * Force plugin locale to the configured one if saved
  */
-add_filter( 'plugin_locale', 'gsm_force_plugin_locale', 10, 2 );
-function gsm_force_plugin_locale( $locale, $domain ) {
-	if ( 'sync-manager-for-github' === $domain ) {
-		$selected = get_option( 'gsm_locale', '' );
+add_filter( 'plugin_locale', 'codesync_force_plugin_locale', 10, 2 );
+function codesync_force_plugin_locale( $locale, $domain ) {
+	if ( 'codesync-manager-for-github' === $domain ) {
+		$selected = get_option( 'codesync_locale', '' );
 		if ( ! empty( $selected ) ) {
 			return $selected;
 		}
@@ -79,38 +79,38 @@ function gsm_force_plugin_locale( $locale, $domain ) {
  * Activation Hook.
  * Prepares secure directories, validates key setups, and registers cron checks.
  */
-register_activation_hook( GSM_FILE, 'gsm_activate' );
-function gsm_activate() {
+register_activation_hook( CODESYNC_FILE, 'codesync_activate' );
+function codesync_activate() {
 	// Ensure secure directories are initialized
-	GSM_Manager::get_secure_directory( 'gsm-temp' );
-	GSM_Manager::get_secure_directory( 'gsm-backups' );
+	CODESYNC_Manager::get_secure_directory( 'gsm-temp' );
+	CODESYNC_Manager::get_secure_directory( 'gsm-backups' );
 
 	// Schedule the update checking task twicedaily
-	if ( ! wp_next_scheduled( 'gsm_cron_check_updates' ) ) {
-		wp_schedule_event( time(), 'twicedaily', 'gsm_cron_check_updates' );
+	if ( ! wp_next_scheduled( 'codesync_cron_check_updates' ) ) {
+		wp_schedule_event( time(), 'twicedaily', 'codesync_cron_check_updates' );
 	}
 
-	GSM_Manager::log( 'sistema', 'ativacao', 'sucesso', __( 'Plugin ativado. Diretórios temporários protegidos e WP-Cron agendado com sucesso.', 'sync-manager-for-github' ) );
+	CODESYNC_Manager::log( 'sistema', 'ativacao', 'sucesso', __( 'Plugin ativado. Diretórios temporários protegidos e WP-Cron agendado com sucesso.', 'codesync-manager-for-github' ) );
 }
 
 /**
  * Deactivation Hook.
  * Cleans scheduled cron schedules and removes residual temporary directories.
  */
-register_deactivation_hook( GSM_FILE, 'gsm_deactivate' );
-function gsm_deactivate() {
+register_deactivation_hook( CODESYNC_FILE, 'codesync_deactivate' );
+function codesync_deactivate() {
 	// Clear the cron schedule
-	wp_clear_scheduled_hook( 'gsm_cron_check_updates' );
+	wp_clear_scheduled_hook( 'codesync_cron_check_updates' );
 
 	// Wipe temp directories completely
-	$temp_dir = GSM_Manager::get_secure_directory( 'gsm-temp' );
+	$temp_dir = CODESYNC_Manager::get_secure_directory( 'gsm-temp' );
 	if ( ! is_wp_error( $temp_dir ) && is_dir( $temp_dir ) ) {
-		GSM_Manager::delete_directory_recursive( $temp_dir );
+		CODESYNC_Manager::delete_directory_recursive( $temp_dir );
 	}
 
-	$backup_dir = GSM_Manager::get_secure_directory( 'gsm-backups' );
+	$backup_dir = CODESYNC_Manager::get_secure_directory( 'gsm-backups' );
 	if ( ! is_wp_error( $backup_dir ) && is_dir( $backup_dir ) ) {
-		GSM_Manager::delete_directory_recursive( $backup_dir );
+		CODESYNC_Manager::delete_directory_recursive( $backup_dir );
 	}
 }
 
@@ -118,32 +118,32 @@ function gsm_deactivate() {
  * Cron Callback Function.
  * Runs in the background to identify new releases and sweep secure directories.
  */
-function gsm_cron_check_updates_callback() {
+function codesync_cron_check_updates_callback() {
 	// 1. Run garbage collection to clean temporary files older than 24 hours
-	GSM_Manager::run_garbage_collector();
+	CODESYNC_Manager::run_garbage_collector();
 
 	// 2. Perform periodic update checks
-	$token = get_option( GSM_Manager::OPTION_TOKEN );
+	$token = get_option( CODESYNC_Manager::OPTION_TOKEN );
 	if ( empty( $token ) ) {
 		return;
 	}
 
-	$security_check = GSM_Encryption::check_security_keys();
+	$security_check = CODESYNC_Encryption::check_security_keys();
 	if ( is_wp_error( $security_check ) ) {
 		return;
 	}
 
-	$decrypted = GSM_Encryption::decrypt( $token );
+	$decrypted = CODESYNC_Encryption::decrypt( $token );
 	if ( is_wp_error( $decrypted ) ) {
 		return;
 	}
 
-	$managed = get_option( GSM_Manager::OPTION_PLUGINS, array() );
+	$managed = get_option( CODESYNC_Manager::OPTION_PLUGINS, array() );
 	if ( empty( $managed ) || ! is_array( $managed ) ) {
 		return;
 	}
 
-	$api = new GSM_GitHub_API( $decrypted );
+	$api = new CODESYNC_GitHub_API( $decrypted );
 
 	foreach ( $managed as $repo => $data ) {
 		$plugin_file = isset( $data['plugin_file'] ) ? $data['plugin_file'] : '';
@@ -154,7 +154,7 @@ function gsm_cron_check_updates_callback() {
 		$plugin_path = WP_PLUGIN_DIR . '/' . $plugin_file;
 		if ( ! file_exists( $plugin_path ) ) {
 			$managed[ $repo ]['status']        = 'indisponivel';
-			$managed[ $repo ]['error_message'] = __( 'Arquivo principal do plugin não encontrado localmente.', 'sync-manager-for-github' );
+			$managed[ $repo ]['error_message'] = __( 'Arquivo principal do plugin não encontrado localmente.', 'codesync-manager-for-github' );
 			continue;
 		}
 
@@ -179,7 +179,7 @@ function gsm_cron_check_updates_callback() {
 
 		if ( empty( $releases ) ) {
 			$managed[ $repo ]['status']        = 'erro';
-			$managed[ $repo ]['error_message'] = __( 'Repositório não tem releases publicadas.', 'sync-manager-for-github' );
+			$managed[ $repo ]['error_message'] = __( 'Repositório não tem releases publicadas.', 'codesync-manager-for-github' );
 			continue;
 		}
 
@@ -197,10 +197,10 @@ function gsm_cron_check_updates_callback() {
 		}
 	}
 
-	GSM_Manager::update_option_no_autoload( GSM_Manager::OPTION_PLUGINS, $managed );
+	CODESYNC_Manager::update_option_no_autoload( CODESYNC_Manager::OPTION_PLUGINS, $managed );
 
 	// Delete native plugins update transient to force refresh
 	delete_site_transient( 'update_plugins' );
 
-	GSM_Manager::log( 'sistema', 'cron_check', 'sucesso', __( 'Cron automático executou a verificação periódica de atualizações e limpeza.', 'sync-manager-for-github' ) );
+	CODESYNC_Manager::log( 'sistema', 'cron_check', 'sucesso', __( 'Cron automático executou a verificação periódica de atualizações e limpeza.', 'codesync-manager-for-github' ) );
 }

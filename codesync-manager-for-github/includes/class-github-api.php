@@ -10,12 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class GSM_GitHub_API
+ * Class CODESYNC_GitHub_API
  *
  * Interacts with the GitHub API securely, managing authentication, repository fetching,
  * release validation, transient caching, and authenticated asset downloading.
  */
-class GSM_GitHub_API {
+class CODESYNC_GitHub_API {
 
 	/**
 	 * GitHub API base URL.
@@ -55,7 +55,7 @@ class GSM_GitHub_API {
 				'Authorization'   => 'Bearer ' . $this->token,
 				'Accept'          => $accept,
 				'X-GitHub-Api-Version' => '2022-11-28',
-				'User-Agent'      => 'WordPress-GitHub-Sync-Manager/' . ( defined( 'GSM_VERSION' ) ? GSM_VERSION : '1.0.0' ),
+				'User-Agent'      => 'WordPress-GitHub-Sync-Manager/' . ( defined( 'CODESYNC_VERSION' ) ? CODESYNC_VERSION : '1.0.0' ),
 			),
 		);
 	}
@@ -78,14 +78,14 @@ class GSM_GitHub_API {
 		$status_code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status_code ) {
 			return new WP_Error(
-				'gsm_api_auth_failed',
-				__( 'Token inválido ou sem permissões necessárias. Verifique se o token foi criado com o escopo repo e tente novamente.', 'sync-manager-for-github' )
+				'codesync_api_auth_failed',
+				__( 'Token inválido ou sem permissões necessárias. Verifique se o token foi criado com o escopo repo e tente novamente.', 'codesync-manager-for-github' )
 			);
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( ! is_array( $body ) ) {
-			return new WP_Error( 'gsm_api_invalid_json', __( 'Resposta inválida da API do GitHub.', 'sync-manager-for-github' ) );
+			return new WP_Error( 'codesync_api_invalid_json', __( 'Resposta inválida da API do GitHub.', 'codesync-manager-for-github' ) );
 		}
 
 		// Read scopes from header (Classic PATs only)
@@ -103,8 +103,8 @@ class GSM_GitHub_API {
 
 			if ( ! $has_repo && ! $has_public_repo ) {
 				return new WP_Error(
-					'gsm_api_insufficient_scopes',
-					__( 'Token inválido ou sem permissões necessárias. Verifique se o token foi criado com o escopo repo e tente novamente.', 'sync-manager-for-github' )
+					'codesync_api_insufficient_scopes',
+					__( 'Token inválido ou sem permissões necessárias. Verifique se o token foi criado com o escopo repo e tente novamente.', 'codesync-manager-for-github' )
 				);
 			}
 		}
@@ -134,12 +134,12 @@ class GSM_GitHub_API {
 
 		$status_code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status_code ) {
-			return new WP_Error( 'gsm_api_repos_failed', __( 'Falha ao buscar a lista de repositórios do GitHub.', 'sync-manager-for-github' ) );
+			return new WP_Error( 'codesync_api_repos_failed', __( 'Falha ao buscar a lista de repositórios do GitHub.', 'codesync-manager-for-github' ) );
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( ! is_array( $body ) ) {
-			return new WP_Error( 'gsm_api_invalid_response', __( 'Dados de repositórios inválidos.', 'sync-manager-for-github' ) );
+			return new WP_Error( 'codesync_api_invalid_response', __( 'Dados de repositórios inválidos.', 'codesync-manager-for-github' ) );
 		}
 
 		$repos          = array();
@@ -283,14 +283,14 @@ class GSM_GitHub_API {
 		if ( 200 !== $status_code ) {
 			if ( 404 === $status_code ) {
 				return new WP_Error(
-					'gsm_repo_not_found',
-					__( 'Repositório não encontrado ou sem permissão de acesso. Verifique se o token tem acesso a este repositório específico.', 'sync-manager-for-github' )
+					'codesync_repo_not_found',
+					__( 'Repositório não encontrado ou sem permissão de acesso. Verifique se o token tem acesso a este repositório específico.', 'codesync-manager-for-github' )
 				);
 			}
 			return new WP_Error(
-				'gsm_repo_access_error',
+				'codesync_repo_access_error',
 				/* translators: %d: HTTP status code */
-				sprintf( __( 'Erro ao acessar o repositório (%d).', 'sync-manager-for-github' ), $status_code )
+				sprintf( __( 'Erro ao acessar o repositório (%d).', 'codesync-manager-for-github' ), $status_code )
 			);
 		}
 
@@ -307,7 +307,7 @@ class GSM_GitHub_API {
 	 */
 	public function get_releases( $owner, $repo, $force_refresh = false ) {
 		$repo_slug = $owner . '/' . $repo;
-		$cache_key = 'gsm_rel_' . md5( $repo_slug );
+		$cache_key = 'codesync_rel_' . md5( $repo_slug );
 
 		if ( ! $force_refresh ) {
 			$cached = get_transient( $cache_key );
@@ -334,15 +334,15 @@ class GSM_GitHub_API {
 		$status_code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status_code ) {
 			return new WP_Error(
-				'gsm_releases_failed',
+				'codesync_releases_failed',
 				/* translators: %d: HTTP status code */
-				sprintf( __( 'Falha ao buscar as releases do repositório (%d).', 'sync-manager-for-github' ), $status_code )
+				sprintf( __( 'Falha ao buscar as releases do repositório (%d).', 'codesync-manager-for-github' ), $status_code )
 			);
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( ! is_array( $body ) ) {
-			return new WP_Error( 'gsm_releases_invalid_json', __( 'Resposta inválida das releases.', 'sync-manager-for-github' ) );
+			return new WP_Error( 'codesync_releases_invalid_json', __( 'Resposta inválida das releases.', 'codesync-manager-for-github' ) );
 		}
 
 		$releases = array();
@@ -389,8 +389,8 @@ class GSM_GitHub_API {
 					'id'           => 'branch_' . $default_branch,
 					'tag_name'     => $version,
 					/* translators: %s: branch name */
-				'name'         => sprintf( __( 'Ramo Principal (%s)', 'sync-manager-for-github' ), $default_branch ),
-					'body'         => __( 'Instalado diretamente da branch principal do GitHub (sem releases).', 'sync-manager-for-github' ),
+				'name'         => sprintf( __( 'Ramo Principal (%s)', 'codesync-manager-for-github' ), $default_branch ),
+					'body'         => __( 'Instalado diretamente da branch principal do GitHub (sem releases).', 'codesync-manager-for-github' ),
 					'published_at' => current_time( 'mysql' ),
 					'zipball_url'  => sprintf( '%s/repos/%s/%s/zipball/%s', self::API_URL, rawurlencode( $owner ), rawurlencode( $repo ), rawurlencode( $default_branch ) ),
 					'assets'       => array(),
@@ -428,7 +428,7 @@ class GSM_GitHub_API {
 		$status_code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status_code ) {
 			/* translators: %d: HTTP status code */
-			return new WP_Error( 'gsm_api_default_branch_failed', sprintf( __( 'Falha ao buscar detalhes da branch padrão (%d).', 'sync-manager-for-github' ), $status_code ) );
+			return new WP_Error( 'codesync_api_default_branch_failed', sprintf( __( 'Falha ao buscar detalhes da branch padrão (%d).', 'codesync-manager-for-github' ), $status_code ) );
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
@@ -454,39 +454,39 @@ class GSM_GitHub_API {
 		$response = wp_remote_get( $url, $args );
 
 		if ( is_wp_error( $response ) ) {
-			GSM_Manager::log(
+			CODESYNC_Manager::log(
 				$owner . '/' . $repo,
 				'buscar_conteudo_raiz',
 				'erro',
 				/* translators: 1: branch name, 2: error message */
-				sprintf( __( 'Erro de comunicação ao listar raiz da branch %1$s: %2$s', 'sync-manager-for-github' ), $branch, $response->get_error_message() )
+				sprintf( __( 'Erro de comunicação ao listar raiz da branch %1$s: %2$s', 'codesync-manager-for-github' ), $branch, $response->get_error_message() )
 			);
 			return $response;
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status_code ) {
-			GSM_Manager::log(
+			CODESYNC_Manager::log(
 				$owner . '/' . $repo,
 				'buscar_conteudo_raiz',
 				'erro',
 				/* translators: 1: HTTP status code, 2: branch name */
-				sprintf( __( 'Falha HTTP %1$d ao listar raiz da branch %2$s.', 'sync-manager-for-github' ), $status_code, $branch )
+				sprintf( __( 'Falha HTTP %1$d ao listar raiz da branch %2$s.', 'codesync-manager-for-github' ), $status_code, $branch )
 			);
 			/* translators: %d: HTTP status code */
-			return new WP_Error( 'gsm_api_contents_failed', sprintf( __( 'Falha ao listar arquivos do repositório (%d).', 'sync-manager-for-github' ), $status_code ) );
+			return new WP_Error( 'codesync_api_contents_failed', sprintf( __( 'Falha ao listar arquivos do repositório (%d).', 'codesync-manager-for-github' ), $status_code ) );
 		}
 
 		$files = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( ! is_array( $files ) ) {
-			GSM_Manager::log(
+			CODESYNC_Manager::log(
 				$owner . '/' . $repo,
 				'buscar_conteudo_raiz',
 				'erro',
 				/* translators: %s: branch name */
-				sprintf( __( 'Resposta inválida retornada para a raiz da branch %s.', 'sync-manager-for-github' ), $branch )
+				sprintf( __( 'Resposta inválida retornada para a raiz da branch %s.', 'codesync-manager-for-github' ), $branch )
 			);
-			return new WP_Error( 'gsm_api_invalid_contents', __( 'Estrutura de arquivos inválida no repositório.', 'sync-manager-for-github' ) );
+			return new WP_Error( 'codesync_api_invalid_contents', __( 'Estrutura de arquivos inválida no repositório.', 'codesync-manager-for-github' ) );
 		}
 
 		// Look for PHP files and subdirectories in the root
@@ -549,36 +549,36 @@ class GSM_GitHub_API {
 				$subdir_response = wp_remote_get( $subdir_url, $args );
 
 				if ( is_wp_error( $subdir_response ) ) {
-					GSM_Manager::log(
+					CODESYNC_Manager::log(
 						$owner . '/' . $repo,
 						'escanear_subpasta',
 						'erro',
 						/* translators: 1: subfolder path, 2: error message */
-						sprintf( __( 'Erro de comunicação ao listar subpasta %1$s: %2$s', 'sync-manager-for-github' ), $subdir_path, $subdir_response->get_error_message() )
+						sprintf( __( 'Erro de comunicação ao listar subpasta %1$s: %2$s', 'codesync-manager-for-github' ), $subdir_path, $subdir_response->get_error_message() )
 					);
 					continue;
 				}
 
 				$subdir_status = wp_remote_retrieve_response_code( $subdir_response );
 				if ( 200 !== $subdir_status ) {
-					GSM_Manager::log(
+					CODESYNC_Manager::log(
 						$owner . '/' . $repo,
 						'escanear_subpasta',
 						'erro',
 						/* translators: 1: HTTP status code, 2: subfolder path */
-						sprintf( __( 'Falha HTTP %1$d ao listar subpasta %2$s.', 'sync-manager-for-github' ), $subdir_status, $subdir_path )
+						sprintf( __( 'Falha HTTP %1$d ao listar subpasta %2$s.', 'codesync-manager-for-github' ), $subdir_status, $subdir_path )
 					);
 					continue;
 				}
 
 				$subdir_files = json_decode( wp_remote_retrieve_body( $subdir_response ), true );
 				if ( ! is_array( $subdir_files ) ) {
-					GSM_Manager::log(
+					CODESYNC_Manager::log(
 						$owner . '/' . $repo,
 						'escanear_subpasta',
 						'erro',
 						/* translators: %s: subfolder path */
-						sprintf( __( 'Dados inválidos retornados para subpasta %s.', 'sync-manager-for-github' ), $subdir_path )
+						sprintf( __( 'Dados inválidos retornados para subpasta %s.', 'codesync-manager-for-github' ), $subdir_path )
 					);
 					continue;
 				}
@@ -599,7 +599,7 @@ class GSM_GitHub_API {
 			}
 		}
 
-		return new WP_Error( 'gsm_no_php_files', __( 'Nenhum arquivo PHP de plugin válido com cabeçalho "Plugin Name:" foi encontrado na raiz ou subpastas de primeiro nível do repositório.', 'sync-manager-for-github' ) );
+		return new WP_Error( 'codesync_no_php_files', __( 'Nenhum arquivo PHP de plugin válido com cabeçalho "Plugin Name:" foi encontrado na raiz ou subpastas de primeiro nível do repositório.', 'codesync-manager-for-github' ) );
 	}
 
 	/**
@@ -617,36 +617,36 @@ class GSM_GitHub_API {
 		$response = wp_remote_get( $file_url, $args );
 
 		if ( is_wp_error( $response ) ) {
-			GSM_Manager::log(
+			CODESYNC_Manager::log(
 				$owner . '/' . $repo,
 				'obter_cabecalho_arquivo',
 				'erro',
 				/* translators: 1: file path, 2: error message */
-				sprintf( __( 'Erro de comunicação ao obter arquivo %1$s: %2$s', 'sync-manager-for-github' ), $path, $response->get_error_message() )
+				sprintf( __( 'Erro de comunicação ao obter arquivo %1$s: %2$s', 'codesync-manager-for-github' ), $path, $response->get_error_message() )
 			);
 			return false;
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status_code ) {
-			GSM_Manager::log(
+			CODESYNC_Manager::log(
 				$owner . '/' . $repo,
 				'obter_cabecalho_arquivo',
 				'erro',
 				/* translators: 1: HTTP status code, 2: file path */
-				sprintf( __( 'Falha HTTP %1$d ao obter arquivo %2$s.', 'sync-manager-for-github' ), $status_code, $path )
+				sprintf( __( 'Falha HTTP %1$d ao obter arquivo %2$s.', 'codesync-manager-for-github' ), $status_code, $path )
 			);
 			return false;
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( ! is_array( $body ) || empty( $body['content'] ) || 'base64' !== $body['encoding'] ) {
-			GSM_Manager::log(
+			CODESYNC_Manager::log(
 				$owner . '/' . $repo,
 				'obter_cabecalho_arquivo',
 				'erro',
 				/* translators: %s: file path */
-				sprintf( __( 'Conteúdo inválido ou formato inesperado para o arquivo %s.', 'sync-manager-for-github' ), $path )
+				sprintf( __( 'Conteúdo inválido ou formato inesperado para o arquivo %s.', 'codesync-manager-for-github' ), $path )
 			);
 			return false;
 		}
@@ -682,7 +682,7 @@ class GSM_GitHub_API {
 	 */
 	public static function delete_releases_cache( $owner, $repo ) {
 		$repo_slug = $owner . '/' . $repo;
-		$cache_key = 'gsm_rel_' . md5( $repo_slug );
+		$cache_key = 'codesync_rel_' . md5( $repo_slug );
 		delete_transient( $cache_key );
 	}
 
@@ -694,7 +694,7 @@ class GSM_GitHub_API {
 	 */
 	public function download_package( $url ) {
 		if ( empty( $url ) ) {
-			return new WP_Error( 'gsm_download_empty_url', __( 'A URL de download está vazia.', 'sync-manager-for-github' ) );
+			return new WP_Error( 'codesync_download_empty_url', __( 'A URL de download está vazia.', 'codesync-manager-for-github' ) );
 		}
 
 		// Define a local callback to inject the Authorization header securely
@@ -750,9 +750,9 @@ class GSM_GitHub_API {
 		$status_code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status_code ) {
 			return new WP_Error(
-				'gsm_tree_failed',
+				'codesync_tree_failed',
 				/* translators: %d: HTTP status code */
-				sprintf( __( 'Falha ao buscar a estrutura de pastas do repositório (%d).', 'sync-manager-for-github' ), $status_code )
+				sprintf( __( 'Falha ao buscar a estrutura de pastas do repositório (%d).', 'codesync-manager-for-github' ), $status_code )
 			);
 		}
 
@@ -804,12 +804,12 @@ class GSM_GitHub_API {
 		$status_code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status_code ) {
 			/* translators: %d: HTTP status code */
-			return new WP_Error( 'gsm_api_contents_failed', sprintf( __( 'Falha ao listar arquivos do repositório (%d).', 'sync-manager-for-github' ), $status_code ) );
+			return new WP_Error( 'codesync_api_contents_failed', sprintf( __( 'Falha ao listar arquivos do repositório (%d).', 'codesync-manager-for-github' ), $status_code ) );
 		}
 
 		$files = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( ! is_array( $files ) ) {
-			return new WP_Error( 'gsm_api_invalid_contents', __( 'Estrutura de arquivos inválida no repositório.', 'sync-manager-for-github' ) );
+			return new WP_Error( 'codesync_api_invalid_contents', __( 'Estrutura de arquivos inválida no repositório.', 'codesync-manager-for-github' ) );
 		}
 
 		$php_files = array();
@@ -892,7 +892,7 @@ class GSM_GitHub_API {
 			}
 		}
 
-		return new WP_Error( 'gsm_no_plugin_found', __( 'Nenhum plugin detectado automaticamente.', 'sync-manager-for-github' ) );
+		return new WP_Error( 'codesync_no_plugin_found', __( 'Nenhum plugin detectado automaticamente.', 'codesync-manager-for-github' ) );
 	}
 
 	/**
