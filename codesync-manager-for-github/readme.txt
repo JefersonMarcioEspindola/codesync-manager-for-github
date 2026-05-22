@@ -3,7 +3,7 @@ Contributors: JefersonMarcioEspindola, jefersonespindola
 Tags: github, plugin updater, private plugins, github releases, self-hosted
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 1.0.6
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -84,6 +84,10 @@ This service is provided by GitHub, Inc.
 3. Activity log showing install and update history.
 
 == Changelog ==
+
+= 1.1.0 =
+* Hotfix: Corrected autoloader string offset parsing for the new CODESYNC_ prefix.
+* Fix: Removed discouraged `load_plugin_textdomain()` function call based on WP Plugin Check.
 
 = 1.0.6 =
 * Renamed plugin to CodeSync Manager for GitHub and implemented comprehensive WP.org compliance fixes (prefixing, external services disclosure).
