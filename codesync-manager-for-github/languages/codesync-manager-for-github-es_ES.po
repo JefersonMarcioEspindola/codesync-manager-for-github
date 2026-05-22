@@ -736,3 +736,9 @@ msgstr ""
 
 msgid "O subdiretório especificado \"%s\" não foi encontrado no repositório."
 msgstr "El subdirectorio especificado \"%s\" no fue encontrado en el repositorio."
+
+msgid "&#x2705; Plugin Sincronizado com Sucesso!"
+msgstr "&#x2705; ¡Plugin Sincronizado con Éxito!"
+
+msgid "O plugin <strong>%1$s</strong> já estava instalado no seu WordPress. O código foi atualizado e agora está sincronizado e sendo gerenciado (Versão %2$s)."
+msgstr "El plugin <strong>%1$s</strong> ya estaba instalado en tu WordPress. El código ha sido actualizado y ahora está sincronizado y administrado (Versión %2$s)."

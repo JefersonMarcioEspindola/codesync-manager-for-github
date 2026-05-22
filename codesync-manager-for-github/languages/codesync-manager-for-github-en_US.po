@@ -715,3 +715,9 @@ msgstr "Automatic cron executed periodic update check and cleanup."
 
 msgid "O subdiretório especificado \"%s\" não foi encontrado no repositório."
 msgstr "The specified subdirectory \"%s\" was not found in the repository."
+
+msgid "&#x2705; Plugin Sincronizado com Sucesso!"
+msgstr "&#x2705; Plugin Synchronized Successfully!"
+
+msgid "O plugin <strong>%1$s</strong> já estava instalado no seu WordPress. O código foi atualizado e agora está sincronizado e sendo gerenciado (Versão %2$s)."
+msgstr "The plugin <strong>%1$s</strong> was already installed on your WordPress. The code has been updated and is now synchronized and managed (Version %2$s)."

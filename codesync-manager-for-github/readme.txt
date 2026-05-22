@@ -3,7 +3,7 @@ Contributors: JefersonMarcioEspindola, jefersonespindola
 Tags: github, plugin updater, private plugins, github releases, self-hosted
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -84,6 +84,9 @@ This service is provided by GitHub, Inc.
 3. Activity log showing install and update history.
 
 == Changelog ==
+
+= 1.1.4 =
+* Hotfix: Added missing English and Spanish translations for the new synchronization modal texts.
 
 = 1.1.3 =
 * Enhancement: Improved UI/UX of the installation modal by repositioning the activation button to the footer.
