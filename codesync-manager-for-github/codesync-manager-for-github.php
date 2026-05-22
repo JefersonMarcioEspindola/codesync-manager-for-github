@@ -46,8 +46,7 @@ spl_autoload_register( function( $class_name ) {
  * Core Initialization Function
  */
 function codesync_init() {
-	// Load translations
-	load_plugin_textdomain( 'codesync-manager-for-github', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+
 
 	// Initialize core components
 	CODESYNC_Updater::init();
