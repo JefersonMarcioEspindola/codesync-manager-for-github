@@ -165,7 +165,7 @@ class GSM_Admin {
 		<div class="wrap gsm-wrap">
 			<div class="gsm-header-panel">
 				<h1 class="gsm-title">
-					<i data-lucide="github" class="gsm-icon"></i>
+					<img src="<?php echo esc_url( plugins_url( 'assets/icon.png', dirname( __FILE__ ) ) ); ?>" alt="<?php esc_attr_e( 'Sync Manager for GitHub', 'sync-manager-for-github' ); ?>" class="gsm-header-logo" />
 					<?php esc_html_e( 'Sync Manager for GitHub', 'sync-manager-for-github' ); ?>
 				</h1>
 				
@@ -469,12 +469,6 @@ class GSM_Admin {
 						<i data-lucide="cloud-upload" class="gsm-icon"></i>
 						<?php esc_html_e( 'Atualizar', 'sync-manager-for-github' ); ?>
 					</button>
-					<?php if ( ! empty( $data['is_branch'] ) ) : ?>
-						<button type="button" class="button button-small gsm-btn-copy-prompt" data-repo="<?php echo esc_attr( $repo ); ?>" data-version="<?php echo esc_attr( $installed_version ); ?>" title="<?php esc_attr_e( 'Copiar prompt de IA para criar releases', 'sync-manager-for-github' ); ?>">
-							<i data-lucide="clipboard" class="gsm-icon"></i>
-							<?php esc_html_e( 'Prompt Release', 'sync-manager-for-github' ); ?>
-						</button>
-					<?php endif; ?>
 					<button type="button" class="button button-link-delete gsm-btn-remove" data-repo="<?php echo esc_attr( $repo ); ?>">
 						<?php esc_html_e( 'Parar de gerenciar', 'sync-manager-for-github' ); ?>
 					</button>

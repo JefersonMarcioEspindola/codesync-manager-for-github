@@ -737,31 +737,7 @@ jQuery(document).ready(function($) {
 	});
 
 	/* ---------------------------------------------------- */
-	/* 9. Copy AI Release Prompt                            */
-	/* ---------------------------------------------------- */
-	$(document).on('click', '.gsm-btn-copy-prompt', function(e) {
-		e.preventDefault();
-
-		var repo = $(this).data('repo');
-		var version = $(this).data('version') || '1.0.0';
-		if (!repo) return;
-
-		var promptText = gsm_ajax.texts.confirm_prompt.replace('%s', repo).replace('%s', version);
-
-		// Copy to clipboard
-		if (navigator.clipboard && navigator.clipboard.writeText) {
-			navigator.clipboard.writeText(promptText).then(function() {
-				alert(gsm_ajax.texts.prompt_copied);
-			}, function() {
-				fallbackCopyTextToClipboard(promptText);
-			});
-		} else {
-			fallbackCopyTextToClipboard(promptText);
-		}
-	});
-
-	/* ---------------------------------------------------- */
-	/* 10. Save Language Setting                            */
+	/* 9. Save Language Setting                            */
 	/* ---------------------------------------------------- */
 	$(document).on('change', '#gsm_locale', function() {
 		var selectedLocale = $(this).val();
@@ -790,28 +766,6 @@ jQuery(document).ready(function($) {
 			}
 		});
 	});
-
-	function fallbackCopyTextToClipboard(text) {
-		var textArea = document.createElement("textarea");
-		textArea.value = text;
-		textArea.style.position = "fixed"; // Avoid scrolling to bottom
-		document.body.appendChild(textArea);
-		textArea.focus();
-		textArea.select();
-
-		try {
-			var successful = document.execCommand('copy');
-			if (successful) {
-				alert(gsm_ajax.texts.prompt_copied);
-			} else {
-				alert(gsm_ajax.texts.prompt_copy_fail);
-			}
-		} catch (err) {
-			alert(gsm_ajax.texts.prompt_copy_fail);
-		}
-
-		document.body.removeChild(textArea);
-	}
 
 	// Initialize all Lucide icons rendered by PHP on page load
 	lucide.createIcons();
