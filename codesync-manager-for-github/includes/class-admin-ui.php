@@ -303,6 +303,12 @@ class CODESYNC_Admin_UI {
 											<p><?php esc_html_e( 'Update checks occur automatically twice daily via native WP-Cron.', 'codesync-manager-for-github' ); ?></p>
 										</td>
 									</tr>
+									<tr>
+										<th scope="row"><?php esc_html_e( 'Plugin Version', 'codesync-manager-for-github' ); ?></th>
+										<td>
+											<code><?php echo esc_html( defined( 'CODESYNC_VERSION' ) ? CODESYNC_VERSION : '' ); ?></code>
+										</td>
+									</tr>
 								</tbody>
 							</table>
 
@@ -591,7 +597,7 @@ class CODESYNC_Admin_UI {
 							<?php endif; ?>
 						</span>
 						<?php if ( get_option( 'codesync_webhook_ping_' . $repo ) ) : ?>
-							<span style="display:inline-flex; align-items:center; background:#ecfdf5; color:#059669; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600;" title="<?php esc_attr_e( 'Receiving real-time updates from GitHub', 'codesync-manager-for-github' ); ?>">
+							<span style="display:inline-flex; align-items:center; background:#e5f6e8; color:#00a32a; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600;" title="<?php esc_attr_e( 'Receiving real-time updates from GitHub', 'codesync-manager-for-github' ); ?>">
 								<i data-lucide="radio" style="width:12px;height:12px;margin-right:4px;"></i> <?php esc_html_e( 'Webhook Active', 'codesync-manager-for-github' ); ?>
 							</span>
 						<?php endif; ?>

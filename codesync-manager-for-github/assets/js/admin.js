@@ -1223,7 +1223,7 @@ jQuery(document).ready(function($) {
 					// Add "Webhook Active" badge to the card if not already present
 					var $card = $pluginsCards.find('.codesync-plugin-card[data-repo="' + currentWebhookRepo + '"]');
 					if ($card.length && !$card.find('.codesync-webhook-active-badge').length) {
-						var badgeHtml = '<span class="codesync-webhook-active-badge" style="display:inline-flex; align-items:center; background:#ecfdf5; color:#059669; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600;">' +
+						var badgeHtml = '<span class="codesync-webhook-active-badge" style="display:inline-flex; align-items:center; background:#e5f6e8; color:#00a32a; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600;">' +
 							'<i data-lucide="radio" style="width:12px;height:12px;margin-right:4px;"></i> Webhook Active' +
 							'</span>';
 						$card.find('.codesync-status-badge').parent().append(badgeHtml);
