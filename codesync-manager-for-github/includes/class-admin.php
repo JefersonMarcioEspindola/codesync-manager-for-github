@@ -401,7 +401,7 @@ class CODESYNC_Admin {
 
 		<!-- Template CodeSync Checker UI -->
 		<script type="text/template" id="tmpl-codesync-checker-ui">
-			<div class="codesync-checker-container" style="margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+			<div class="codesync-checker-container" style="border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
 				<div class="codesync-checker-intro" style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
 					<h4 style="margin:0 0 5px 0; font-size: 15px;"><i data-lucide="shield-check" class="codesync-icon" style="vertical-align: middle;"></i> <?php esc_html_e( 'Security & Structure Validation', 'codesync-manager-for-github' ); ?></h4>
 					<p style="margin:0; color: #64748b; font-size: 13px;"><?php esc_html_e( 'Analyzing repository code before installation...', 'codesync-manager-for-github' ); ?></p>
