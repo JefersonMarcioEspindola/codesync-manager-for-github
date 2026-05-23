@@ -355,7 +355,7 @@ class CODESYNC_Admin {
 					<div>
 						<button type="button" class="button codesync-modal-btn-cancel"><?php esc_html_e( 'Cancel', 'codesync-manager-for-github' ); ?></button>
 						<button type="button" class="button button-primary codesync-modal-btn-install codesync-btn-confirm-install" style="display:none;"><?php esc_html_e( 'Confirm Installation', 'codesync-manager-for-github' ); ?></button>
-						<button type="button" class="button button-primary codesync-modal-btn-install codesync-btn-force-install" style="display:none; background:#ef4444; border-color:#dc2626; text-shadow:none;"><?php esc_html_e( 'Install Anyway (Not Recommended)', 'codesync-manager-for-github' ); ?></button>
+						<button type="button" class="button button-primary codesync-modal-btn-install codesync-btn-force-install" style="display:none; background:#ef4444; border-color:#dc2626; text-shadow:none;"><?php esc_html_e( 'Install Anyway', 'codesync-manager-for-github' ); ?></button>
 					</div>
 				</div>
 			</div>
