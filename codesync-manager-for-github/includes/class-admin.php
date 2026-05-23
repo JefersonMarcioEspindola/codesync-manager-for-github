@@ -37,6 +37,8 @@ class CODESYNC_Admin {
 		add_action( 'wp_ajax_codesync_force_update', array( __CLASS__, 'ajax_force_update' ) );
 		add_action( 'wp_ajax_codesync_rollback', array( __CLASS__, 'ajax_rollback_plugin' ) );
 		add_action( 'wp_ajax_codesync_verify_webhook', array( __CLASS__, 'ajax_verify_webhook' ) );
+		add_action( 'wp_ajax_codesync_get_webhook_logs', array( __CLASS__, 'ajax_get_webhook_logs' ) );
+		add_action( 'wp_ajax_codesync_disconnect_webhook', array( __CLASS__, 'ajax_disconnect_webhook' ) );
 	}
 
 	/**
@@ -367,49 +369,87 @@ class CODESYNC_Admin {
 			<div class="codesync-modal-backdrop"></div>
 			<div class="codesync-modal-container">
 				<div class="codesync-modal-header">
-					<h3 class="codesync-modal-title"><?php esc_html_e( 'Webhook Configuration', 'codesync-manager-for-github' ); ?></h3>
+					<h3 class="codesync-modal-title" id="codesync-webhook-modal-title"><?php esc_html_e( 'Webhook Configuration', 'codesync-manager-for-github' ); ?></h3>
 					<button type="button" class="codesync-modal-close" aria-label="<?php esc_attr_e( 'Close', 'codesync-manager-for-github' ); ?>">&times;</button>
 				</div>
 				<div class="codesync-modal-body">
 
-					<p><?php esc_html_e( 'Follow these steps to configure a Webhook and receive updates instantly:', 'codesync-manager-for-github' ); ?></p>
-					
-					<div style="margin-bottom: 15px;">
-						<strong><?php esc_html_e( 'Step 1:', 'codesync-manager-for-github' ); ?></strong> 👉 <a href="https://github.com" id="codesync-webhook-direct-link" target="_blank" rel="noopener noreferrer" style="font-weight:600; text-decoration:underline;"><?php esc_html_e( 'Go to Webhooks settings on GitHub', 'codesync-manager-for-github' ); ?></a> <?php esc_html_e( 'and click "Add webhook".', 'codesync-manager-for-github' ); ?>
-					</div>
-
-					<div style="margin-bottom: 15px; padding-left: 10px; border-left: 2px solid #e2e8f0;">
-						<div class="codesync-form-group" style="margin-bottom: 10px;">
-							<label><strong><?php esc_html_e( 'Payload URL:', 'codesync-manager-for-github' ); ?></strong></label>
-							<div style="display:flex;gap:10px;">
-								<input type="text" readonly value="<?php echo esc_url( get_rest_url( null, 'codesync/v1/webhook' ) ); ?>" id="codesync-webhook-url" />
-								<button type="button" class="button codesync-btn-copy" data-target="#codesync-webhook-url"><i data-lucide="copy" class="codesync-icon"></i></button>
+					<!-- View: Webhook Active (shown when ping already received) -->
+					<div id="codesync-webhook-active-view" style="display:none;">
+						<!-- Header: connection info -->
+						<div style="display:flex; align-items:center; gap:12px; padding: 4px 0 16px; border-bottom:1px solid #e2e8f0; margin-bottom:16px;">
+							<div style="flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:9999px; background:#ecfdf5;">
+								<i data-lucide="radio" style="width:22px;height:22px;color:#059669;"></i>
+							</div>
+							<div>
+								<p style="margin:0; font-weight:700; color:#059669; font-size:14px;"><?php esc_html_e( 'Webhook Active', 'codesync-manager-for-github' ); ?></p>
+								<p style="margin:0; font-size:12px; color:#64748b;" id="codesync-webhook-ping-info"><?php esc_html_e( 'Loading connection info...', 'codesync-manager-for-github' ); ?></p>
 							</div>
 						</div>
 
-						<p style="margin-bottom: 10px;"><strong><?php esc_html_e( 'Content type:', 'codesync-manager-for-github' ); ?></strong> <code style="padding: 3px 6px; background:#f1f5f9;">application/json</code></p>
-
-						<div class="codesync-form-group" style="margin-bottom: 10px;">
-							<label><strong><?php esc_html_e( 'Secret:', 'codesync-manager-for-github' ); ?></strong></label>
-							<div style="display:flex;gap:10px;">
-								<input type="password" readonly value="<?php echo esc_attr( class_exists('CODESYNC_Webhook') ? CODESYNC_Webhook::get_or_create_secret() : '' ); ?>" id="codesync-webhook-secret" />
-								<button type="button" class="button codesync-btn-toggle-visibility" data-target="#codesync-webhook-secret"><i data-lucide="eye" class="codesync-icon"></i></button>
-								<button type="button" class="button codesync-btn-copy" data-target="#codesync-webhook-secret"><i data-lucide="copy" class="codesync-icon"></i></button>
+						<!-- Logs list -->
+						<p style="margin:0 0 8px; font-size:12px; font-weight:600; color:#475569; text-transform:uppercase; letter-spacing:.04em;"><?php esc_html_e( 'Recent Activity', 'codesync-manager-for-github' ); ?></p>
+						<div id="codesync-webhook-logs-list" style="max-height:240px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px; background:#f8fafc;">
+							<div style="padding:20px; text-align:center; color:#94a3b8; font-size:13px;">
+								<i data-lucide="loader-2" class="codesync-icon codesync-spin" style="width:16px;height:16px;"></i>
 							</div>
+						</div>
+
+						<!-- Show setup details link -->
+						<p style="text-align:center; margin:14px 0 0;">
+							<a href="#" id="codesync-webhook-show-details" style="font-size:12px; color:#94a3b8; text-decoration:underline;"><?php esc_html_e( 'View webhook configuration details', 'codesync-manager-for-github' ); ?></a>
+						</p>
+
+						<!-- Disconnect button -->
+						<div style="text-align:center; margin:16px 0 0;">
+							<button type="button" id="codesync-btn-disconnect-webhook" class="button" style="color:#ef4444; border-color:#fca5a5; display:inline-flex; align-items:center; gap:5px;">
+								<i data-lucide="unplug" style="width:13px;height:13px;"></i>
+								<?php esc_html_e( 'Disconnect Webhook', 'codesync-manager-for-github' ); ?>
+							</button>
 						</div>
 					</div>
 
-					<div style="margin-bottom: 15px;">
-						<strong><?php esc_html_e( 'Step 2:', 'codesync-manager-for-github' ); ?></strong> <?php esc_html_e( 'Under "Which events would you like to trigger this webhook?", select:', 'codesync-manager-for-github' ); ?>
-						<ul style="list-style-type: disc; margin-left: 20px; margin-top: 5px; color: #475569;">
-							<li><em><?php esc_html_e( '"Let me select individual events."', 'codesync-manager-for-github' ); ?></em></li>
-							<li><?php esc_html_e( 'Check', 'codesync-manager-for-github' ); ?> <strong>Pushes</strong> <?php esc_html_e( 'and', 'codesync-manager-for-github' ); ?> <strong>Releases</strong>.</li>
-							<li><?php esc_html_e( 'Uncheck everything else.', 'codesync-manager-for-github' ); ?></li>
-						</ul>
-					</div>
+					<!-- View: Webhook Setup (shown when not yet configured / verify button clicked) -->
+					<div id="codesync-webhook-setup-view">
+						<p><?php esc_html_e( 'Follow these steps to configure a Webhook and receive updates instantly:', 'codesync-manager-for-github' ); ?></p>
+						
+						<div style="margin-bottom: 15px;">
+							<strong><?php esc_html_e( 'Step 1:', 'codesync-manager-for-github' ); ?></strong> 👉 <a href="https://github.com" id="codesync-webhook-direct-link" target="_blank" rel="noopener noreferrer" style="font-weight:600; text-decoration:underline;"><?php esc_html_e( 'Go to Webhooks settings on GitHub', 'codesync-manager-for-github' ); ?></a> <?php esc_html_e( 'and click "Add webhook".', 'codesync-manager-for-github' ); ?>
+						</div>
 
-					<div style="margin-bottom: 15px;">
-						<strong><?php esc_html_e( 'Step 3:', 'codesync-manager-for-github' ); ?></strong> <?php esc_html_e( 'Click "Add webhook" at the bottom of the page.', 'codesync-manager-for-github' ); ?>
+						<div style="margin-bottom: 15px; padding-left: 10px; border-left: 2px solid #e2e8f0;">
+							<div class="codesync-form-group" style="margin-bottom: 10px;">
+								<label><strong><?php esc_html_e( 'Payload URL:', 'codesync-manager-for-github' ); ?></strong></label>
+								<div style="display:flex;gap:10px;">
+									<input type="text" readonly value="<?php echo esc_url( get_rest_url( null, 'codesync/v1/webhook' ) ); ?>" id="codesync-webhook-url" />
+									<button type="button" class="button codesync-btn-copy" data-target="#codesync-webhook-url"><i data-lucide="copy" class="codesync-icon"></i></button>
+								</div>
+							</div>
+
+							<p style="margin-bottom: 10px;"><strong><?php esc_html_e( 'Content type:', 'codesync-manager-for-github' ); ?></strong> <code style="padding: 3px 6px; background:#f1f5f9;">application/json</code></p>
+
+							<div class="codesync-form-group" style="margin-bottom: 10px;">
+								<label><strong><?php esc_html_e( 'Secret:', 'codesync-manager-for-github' ); ?></strong></label>
+								<div style="display:flex;gap:10px;">
+									<input type="password" readonly value="<?php echo esc_attr( class_exists('CODESYNC_Webhook') ? CODESYNC_Webhook::get_or_create_secret() : '' ); ?>" id="codesync-webhook-secret" />
+									<button type="button" class="button codesync-btn-toggle-visibility" data-target="#codesync-webhook-secret"><i data-lucide="eye" class="codesync-icon"></i></button>
+									<button type="button" class="button codesync-btn-copy" data-target="#codesync-webhook-secret"><i data-lucide="copy" class="codesync-icon"></i></button>
+								</div>
+							</div>
+						</div>
+
+						<div style="margin-bottom: 15px;">
+							<strong><?php esc_html_e( 'Step 2:', 'codesync-manager-for-github' ); ?></strong> <?php esc_html_e( 'Under "Which events would you like to trigger this webhook?", select:', 'codesync-manager-for-github' ); ?>
+							<ul style="list-style-type: disc; margin-left: 20px; margin-top: 5px; color: #475569;">
+								<li><em><?php esc_html_e( '"Let me select individual events."', 'codesync-manager-for-github' ); ?></em></li>
+								<li><?php esc_html_e( 'Check', 'codesync-manager-for-github' ); ?> <strong>Pushes</strong> <?php esc_html_e( 'and', 'codesync-manager-for-github' ); ?> <strong>Releases</strong>.</li>
+								<li><?php esc_html_e( 'Uncheck everything else.', 'codesync-manager-for-github' ); ?></li>
+							</ul>
+						</div>
+
+						<div style="margin-bottom: 15px;">
+							<strong><?php esc_html_e( 'Step 3:', 'codesync-manager-for-github' ); ?></strong> <?php esc_html_e( 'Click "Add webhook" at the bottom of the page.', 'codesync-manager-for-github' ); ?>
+						</div>
 					</div>
 				</div>
 				<div class="codesync-modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
@@ -576,7 +616,7 @@ class CODESYNC_Admin {
 							<?php endif; ?>
 						</span>
 						<?php if ( get_option( 'codesync_webhook_ping_' . $repo ) ) : ?>
-							<span style="display:inline-flex; align-items:center; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600;" title="<?php esc_attr_e( 'Receiving real-time updates from GitHub', 'codesync-manager-for-github' ); ?>">
+							<span style="display:inline-flex; align-items:center; background:#ecfdf5; color:#059669; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600;" title="<?php esc_attr_e( 'Receiving real-time updates from GitHub', 'codesync-manager-for-github' ); ?>">
 								<i data-lucide="radio" style="width:12px;height:12px;margin-right:4px;"></i> <?php esc_html_e( 'Webhook Active', 'codesync-manager-for-github' ); ?>
 							</span>
 						<?php endif; ?>
@@ -655,7 +695,7 @@ class CODESYNC_Admin {
 						<?php esc_html_e( 'Update', 'codesync-manager-for-github' ); ?>
 					</button>
 
-					<button type="button" class="button codesync-btn-webhook-info" data-repo="<?php echo esc_attr( $repo ); ?>">
+					<button type="button" class="button codesync-btn-webhook-info" data-repo="<?php echo esc_attr( $repo ); ?>" data-active="<?php echo get_option( 'codesync_webhook_ping_' . $repo ) ? '1' : '0'; ?>">
 						<i data-lucide="zap" class="codesync-icon"></i>
 						Webhook
 					</button>
@@ -1301,111 +1341,21 @@ class CODESYNC_Admin {
 			wp_send_json_error( array( 'message' => __( 'Repositório não especificado.', 'codesync-manager-for-github' ) ) );
 		}
 
-		$token = get_option( CODESYNC_Manager::OPTION_TOKEN );
-		if ( empty( $token ) ) {
-			wp_send_json_error( array( 'message' => __( 'Token do GitHub não configurado.', 'codesync-manager-for-github' ) ) );
-		}
+		$ignore_php_check = ! empty( $_POST['ignore_php_check'] );
+		CODESYNC_Updater::$ignore_php_check = $ignore_php_check;
 
-		$security_check = CODESYNC_Encryption::check_security_keys();
-		if ( is_wp_error( $security_check ) ) {
-			wp_send_json_error( array( 'message' => $security_check->get_error_message() ) );
-		}
-
-		$decrypted = CODESYNC_Encryption::decrypt( $token );
-		if ( is_wp_error( $decrypted ) ) {
-			wp_send_json_error( array( 'message' => $decrypted->get_error_message() ) );
-		}
-
-		$managed = get_option( CODESYNC_Manager::OPTION_PLUGINS, array() );
-		if ( ! isset( $managed[ $repo_slug ] ) ) {
-			wp_send_json_error( array( 'message' => __( 'Plugin não encontrado na lista gerenciada.', 'codesync-manager-for-github' ) ) );
-		}
-
-		$plugin_data        = $managed[ $repo_slug ];
-		$selected_subfolder = isset( $plugin_data['subfolder'] ) ? $plugin_data['subfolder'] : '';
-		$stored_branch      = isset( $plugin_data['branch_name'] ) ? $plugin_data['branch_name'] : '';
-
-		$parts = explode( '/', $repo_slug );
-		if ( count( $parts ) !== 2 ) {
-			wp_send_json_error( array( 'message' => __( 'Slug de repositório inválido.', 'codesync-manager-for-github' ) ) );
-		}
-		$owner = $parts[0];
-		$repo  = $parts[1];
-
-		$api = new CODESYNC_GitHub_API( $decrypted );
-
-		// Use branch if plugin was installed from branch, otherwise use latest release
-		$target_release = null;
-		if ( ! empty( $plugin_data['is_branch'] ) && ! empty( $stored_branch ) ) {
-			$target_release = array(
-				'tag_name'    => $stored_branch,
-				'zipball_url' => 'https://api.github.com/repos/' . $repo_slug . '/zipball/' . $stored_branch,
-				'assets'      => array(),
-				'is_branch'   => true,
-				'branch_name' => $stored_branch,
-			);
-		} else {
-			$releases = $api->get_releases( $owner, $repo );
-			if ( is_wp_error( $releases ) ) {
-				wp_send_json_error( array( 'message' => $releases->get_error_message() ) );
-			}
-			if ( empty( $releases ) ) {
-				wp_send_json_error( array( 'message' => __( 'Nenhuma release encontrada no repositório.', 'codesync-manager-for-github' ) ) );
-			}
-			$target_release = $releases[0];
-		}
-
-		$package_url = '';
-		if ( ! empty( $target_release['assets'] ) ) {
-			$package_url = $target_release['assets'][0]['url'];
-		} elseif ( ! empty( $target_release['zipball_url'] ) ) {
-			$package_url = $target_release['zipball_url'];
-		}
-
-		if ( empty( $package_url ) ) {
-			wp_send_json_error( array( 'message' => __( 'Nenhum pacote ZIP encontrado para download.', 'codesync-manager-for-github' ) ) );
-		}
-
-		include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-		include_once ABSPATH . 'wp-admin/includes/file.php';
-		include_once ABSPATH . 'wp-admin/includes/plugin.php';
-
-		CODESYNC_Updater::$currently_installing_repo      = $repo_slug;
-		CODESYNC_Updater::$currently_installing_subfolder = $selected_subfolder;
-		CODESYNC_Updater::$ignore_php_check               = ! empty( $_POST['ignore_php_check'] );
-
-		$codesync_fs_filter = function() { return 'direct'; };
-		add_filter( 'filesystem_method', $codesync_fs_filter, PHP_INT_MAX );
-
-		$skin     = new Automatic_Upgrader_Skin();
-		$upgrader = new Plugin_Upgrader( $skin );
-		$result   = $upgrader->install( $package_url, array( 'overwrite_package' => true ) );
-
-		remove_filter( 'filesystem_method', $codesync_fs_filter, PHP_INT_MAX );
-		wp_clean_plugins_cache();
-
-		CODESYNC_Updater::$currently_installing_repo      = '';
-		CODESYNC_Updater::$currently_installing_subfolder = '';
+		$result = CODESYNC_Updater::perform_update( $repo_slug, $ignore_php_check, true );
 
 		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( array( 
+			wp_send_json_error( array(
 				'message' => $result->get_error_message(),
-				'code'    => $result->get_error_code()
+				'code'    => $result->get_error_code(),
 			) );
 		}
 
-		if ( ! $result ) {
-			wp_send_json_error( array( 'message' => __( 'A reinstalação falhou. Tente novamente ou verifique as permissões do servidor.', 'codesync-manager-for-github' ) ) );
-		}
+		$latest_version = $result['version'];
+		$plugin_name    = $result['plugin_name'];
 
-		$latest_version = ltrim( $target_release['tag_name'], 'vV' );
-
-		$managed[ $repo_slug ]['latest_version'] = $latest_version;
-		$managed[ $repo_slug ]['status']         = 'atualizado';
-		$managed[ $repo_slug ]['last_checked']   = current_time( 'mysql' );
-		$managed[ $repo_slug ]['error_message']  = '';
-
-		CODESYNC_Manager::update_option_no_autoload( CODESYNC_Manager::OPTION_PLUGINS, $managed );
 		CODESYNC_Manager::log(
 			$repo_slug,
 			'atualizacao',
@@ -1701,5 +1651,59 @@ class CODESYNC_Admin {
 		} else {
 			wp_send_json_error( array( 'message' => __( 'Ping não recebido. Tente novamente.', 'codesync-manager-for-github' ) ) );
 		}
+	}
+
+	/**
+	 * AJAX endpoint: Get webhook-related logs for a specific repo (last 10).
+	 */
+	public static function ajax_get_webhook_logs() {
+		check_ajax_referer( 'codesync_admin_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Sem permissões adequadas.', 'codesync-manager-for-github' ) ) );
+		}
+
+		$repo_slug = isset( $_POST['repo'] ) ? sanitize_text_field( wp_unslash( $_POST['repo'] ) ) : '';
+		if ( empty( $repo_slug ) ) {
+			wp_send_json_error( array( 'message' => __( 'Repositório não especificado.', 'codesync-manager-for-github' ) ) );
+		}
+
+		$all_logs = get_option( CODESYNC_Manager::OPTION_LOGS, array() );
+		if ( ! is_array( $all_logs ) ) {
+			$all_logs = array();
+		}
+
+		// Filter logs for this specific repo.
+		$repo_logs = array_values( array_filter( $all_logs, function( $log ) use ( $repo_slug ) {
+			return isset( $log['repo'] ) && $log['repo'] === $repo_slug;
+		} ) );
+
+		// Return up to 10 most recent.
+		$recent = array_slice( $repo_logs, 0, 10 );
+
+		$ping_time = get_option( 'codesync_webhook_ping_' . $repo_slug );
+
+		wp_send_json_success( array(
+			'logs'      => $recent,
+			'ping_time' => $ping_time ? date_i18n( 'd/m/Y H:i', $ping_time ) : '',
+		) );
+	}
+
+	/**
+	 * AJAX endpoint: Disconnect (clear) webhook ping for a specific repo.
+	 */
+	public static function ajax_disconnect_webhook() {
+		check_ajax_referer( 'codesync_admin_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Sem permissões adequadas.', 'codesync-manager-for-github' ) ) );
+		}
+
+		$repo_slug = isset( $_POST['repo'] ) ? sanitize_text_field( wp_unslash( $_POST['repo'] ) ) : '';
+		if ( empty( $repo_slug ) ) {
+			wp_send_json_error( array( 'message' => __( 'Repositório não especificado.', 'codesync-manager-for-github' ) ) );
+		}
+
+		delete_option( 'codesync_webhook_ping_' . $repo_slug );
+
+		wp_send_json_success( array( 'message' => __( 'Webhook desconectado. O status será redefinido.', 'codesync-manager-for-github' ) ) );
 	}
 }

@@ -977,26 +977,168 @@ jQuery(document).ready(function($) {
 		$webhookModal.removeClass('codesync-modal-open');
 		setTimeout(function() {
 			$webhookModal.hide();
-			$('#codesync-btn-verify-webhook').prop('disabled', true).text('Verify Webhook');
+			$('#codesync-btn-verify-webhook').prop('disabled', true).text('Verify Webhook').show().css({
+				'background-color': '', 'border-color': '', 'color': ''
+			});
 		}, 250);
 	}
 
 	$pluginsCards.on('click', '.codesync-btn-webhook-info', function(e) {
 		e.preventDefault();
 		var repo = $(this).data('repo');
+		var isActive = $(this).data('active') == '1'; // true if ping already received
 		currentWebhookRepo = repo || '';
-		
+
 		if (repo) {
 			$('#codesync-webhook-direct-link').attr('href', 'https://github.com/' + repo + '/settings/hooks');
 		} else {
 			$('#codesync-webhook-direct-link').attr('href', 'https://github.com/settings/hooks');
 		}
 
+		// Reset modal state
+		$('#codesync-webhook-modal-title').text(isActive ? 'Webhook Active' : 'Webhook Configuration');
+		$('#codesync-btn-verify-webhook').prop('disabled', true).text('Verify Webhook').css({
+			'background-color': '', 'border-color': '', 'color': ''
+		});
+
+		if (isActive) {
+			// Show active view, hide setup view
+			$('#codesync-webhook-active-view').show();
+			$('#codesync-webhook-setup-view').hide();
+			$('#codesync-btn-verify-webhook').hide();
+			// Load logs
+			loadWebhookLogs(repo);
+		} else {
+			// Show setup view, hide active view
+			$('#codesync-webhook-active-view').hide();
+			$('#codesync-webhook-setup-view').show();
+			$('#codesync-btn-verify-webhook').show();
+		}
+
 		$webhookModal.show();
-		// small delay to allow display:block to render before adding class for opacity transition
 		setTimeout(function() {
 			$webhookModal.addClass('codesync-modal-open');
 		}, 10);
+	});
+
+	// Load webhook logs for current repo
+	function loadWebhookLogs(repo) {
+		var $list = $('#codesync-webhook-logs-list');
+		var $pingInfo = $('#codesync-webhook-ping-info');
+		$list.html('<div style="padding:20px; text-align:center; color:#94a3b8; font-size:13px;"><i data-lucide="loader-2" class="codesync-icon codesync-spin" style="width:16px;height:16px;"></i></div>');
+		if (window.lucide) { window.lucide.createIcons(); }
+
+		$.ajax({
+			url: codesync_ajax.url,
+			type: 'POST',
+			data: {
+				action: 'codesync_get_webhook_logs',
+				repo: repo,
+				nonce: codesync_ajax.nonce
+			},
+			success: function(response) {
+				if (!response.success) {
+					$list.html('<p style="padding:16px; color:#94a3b8; font-size:13px; margin:0; text-align:center;">No logs found.</p>');
+					return;
+				}
+				var data = response.data;
+
+				// Update ping info line
+				if (data.ping_time) {
+					$pingInfo.text('Connected since ' + data.ping_time + ' · Auto-sync active');
+				}
+
+				// Render logs
+				if (!data.logs || data.logs.length === 0) {
+					$list.html('<p style="padding:16px; color:#94a3b8; font-size:13px; margin:0; text-align:center;">No activity recorded yet for this repository.</p>');
+					return;
+				}
+
+				var html = '';
+				$.each(data.logs, function(i, log) {
+					var isSuccess = (log.result === 'sucesso');
+					var dotColor  = isSuccess ? '#10b981' : '#ef4444';
+					var resultLabel = isSuccess ? 'OK' : 'ERR';
+					var borderTop = i > 0 ? 'border-top:1px solid #e2e8f0;' : '';
+
+					// Translate action
+					var actionMap = {
+						'sistema': 'System', 'atualizacao': 'Update', 'instalacao': 'Install',
+						'ativacao': 'Activation', 'cron_check': 'Cron', 'conexao': 'Connect',
+						'desconexao': 'Disconnect', 'restauracao': 'Rollback'
+					};
+					var action = actionMap[log.action] || log.action.toUpperCase();
+
+					html += '<div style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; ' + borderTop + '">';
+					html += '  <span style="flex-shrink:0; margin-top:3px; width:8px; height:8px; border-radius:9999px; background:' + dotColor + '; display:inline-block;"></span>';
+					html += '  <div style="flex:1; min-width:0;">';
+					html += '    <p style="margin:0; font-size:12px; color:#1e293b; line-height:1.4; word-break:break-word;">' + $('<div>').text(log.message).html() + '</p>';
+					html += '    <p style="margin:2px 0 0; font-size:11px; color:#94a3b8;">' + log.timestamp + ' &nbsp;·&nbsp; <strong>' + action + '</strong></p>';
+					html += '  </div>';
+					html += '  <span style="flex-shrink:0; font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px; background:' + (isSuccess ? '#dcfce7' : '#fee2e2') + '; color:' + (isSuccess ? '#166534' : '#991b1b') + ';">' + resultLabel + '</span>';
+					html += '</div>';
+				});
+				$list.html(html);
+			},
+			error: function() {
+				$list.html('<p style="padding:16px; color:#ef4444; font-size:13px; margin:0; text-align:center;">Failed to load logs.</p>');
+			}
+		});
+	}
+
+	// "View configuration details" link inside active view
+	$webhookModal.on('click', '#codesync-webhook-show-details', function(e) {
+		e.preventDefault();
+		$('#codesync-webhook-active-view').slideUp(200);
+		$('#codesync-webhook-setup-view').slideDown(200);
+		$('#codesync-webhook-modal-title').text('Webhook Configuration');
+		$('#codesync-btn-verify-webhook').show().prop('disabled', false);
+	});
+
+	// Disconnect webhook button
+	$webhookModal.on('click', '#codesync-btn-disconnect-webhook', function(e) {
+		e.preventDefault();
+		if (!currentWebhookRepo) return;
+		if (!confirm('Are you sure you want to disconnect the webhook for ' + currentWebhookRepo + '? The webhook on GitHub will remain, but the connection status will be reset here.')) {
+			return;
+		}
+		var $btn = $(this);
+		$btn.prop('disabled', true).text('Disconnecting...');
+
+		$.ajax({
+			url: codesync_ajax.url,
+			type: 'POST',
+			data: {
+				action: 'codesync_disconnect_webhook',
+				repo: currentWebhookRepo,
+				nonce: codesync_ajax.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					// Update the card: remove badge, reset data-active
+					var $card = $pluginsCards.find('.codesync-plugin-card[data-repo="' + currentWebhookRepo + '"]');
+					$card.find('.codesync-webhook-active-badge').remove();
+					$card.find('.codesync-btn-webhook-info[data-repo="' + currentWebhookRepo + '"]').attr('data-active', '0');
+
+					// Transition to setup view
+					$('#codesync-webhook-active-view').slideUp(200, function() {
+						$('#codesync-webhook-setup-view').slideDown(200);
+					});
+					$('#codesync-webhook-modal-title').text('Webhook Configuration');
+					$('#codesync-btn-verify-webhook').show().prop('disabled', true);
+					currentWebhookRepo = '';
+				} else {
+					alert(response.data.message);
+					$btn.prop('disabled', false).html('<i data-lucide="unplug" style="width:13px;height:13px;"></i> Disconnect');
+					if (window.lucide) { window.lucide.createIcons({ nodes: [$btn[0]] }); }
+				}
+			},
+			error: function() {
+				alert('Communication error. Try again.');
+				$btn.prop('disabled', false).html('<i data-lucide="unplug" style="width:13px;height:13px;"></i> Disconnect');
+				if (window.lucide) { window.lucide.createIcons({ nodes: [$btn[0]] }); }
+			}
+		});
 	});
 
 	$webhookModal.find('.codesync-modal-close, .codesync-modal-backdrop, .codesync-modal-btn-cancel').on('click', function(e) {
@@ -1057,12 +1199,25 @@ jQuery(document).ready(function($) {
 			},
 			success: function(response) {
 				if (response.success) {
-					$btn.html('<i data-lucide="check" class="codesync-icon"></i> ' + response.data.message).css({
-						'background-color': '#10b981',
-						'border-color': '#10b981',
-						'color': '#fff'
+					// Transition to active view
+					$('#codesync-webhook-modal-title').text('Webhook Active');
+					$('#codesync-webhook-setup-view').slideUp(300, function() {
+						$('#codesync-webhook-active-view').slideDown(300);
 					});
-					lucide.createIcons({ nodes: [$btn[0]] });
+					$btn.hide();
+
+					// Update the webhook button on the card to mark as active
+					$pluginsCards.find('.codesync-btn-webhook-info[data-repo="' + currentWebhookRepo + '"]').attr('data-active', '1');
+
+					// Add "Webhook Active" badge to the card if not already present
+					var $card = $pluginsCards.find('.codesync-plugin-card[data-repo="' + currentWebhookRepo + '"]');
+					if ($card.length && !$card.find('.codesync-webhook-active-badge').length) {
+						var badgeHtml = '<span class="codesync-webhook-active-badge" style="display:inline-flex; align-items:center; background:#ecfdf5; color:#059669; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600;">' +
+							'<i data-lucide="radio" style="width:12px;height:12px;margin-right:4px;"></i> Webhook Active' +
+							'</span>';
+						$card.find('.codesync-status-badge').parent().append(badgeHtml);
+						lucide.createIcons({ nodes: [$card[0]] });
+					}
 				} else {
 					$btn.prop('disabled', false).html('<i data-lucide="alert-circle" class="codesync-icon"></i> ' + response.data.message).css({
 						'background-color': '#f59e0b',

@@ -799,4 +799,168 @@ class CODESYNC_Updater {
 			}
 		}
 	}
+
+	/**
+	 * Perform a package update (install/reinstall) for a managed plugin or theme.
+	 *
+	 * Used by both the AJAX force-update endpoint and the webhook auto-installer.
+	 *
+	 * @param string $repo_slug         Full repository slug (owner/repo).
+	 * @param bool   $ignore_php_check  Whether to bypass the PHP version requirement check.
+	 * @param bool   $force_reinstall   If true, reinstall even when already on the latest version.
+	 * @return array|WP_Error On success returns array with 'version' and 'plugin_name', on failure WP_Error.
+	 */
+	public static function perform_update( $repo_slug, $ignore_php_check = false, $force_reinstall = false ) {
+		$token = get_option( CODESYNC_Manager::OPTION_TOKEN );
+		if ( empty( $token ) ) {
+			return new WP_Error( 'codesync_missing_token', __( 'Token do GitHub não configurado.', 'codesync-manager-for-github' ) );
+		}
+
+		$security_check = CODESYNC_Encryption::check_security_keys();
+		if ( is_wp_error( $security_check ) ) {
+			return $security_check;
+		}
+
+		$decrypted = CODESYNC_Encryption::decrypt( $token );
+		if ( is_wp_error( $decrypted ) ) {
+			return $decrypted;
+		}
+
+		// Determine if this is a plugin or theme
+		$managed_plugins = get_option( CODESYNC_Manager::OPTION_PLUGINS, array() );
+		$managed_themes  = get_option( CODESYNC_Manager::OPTION_THEMES, array() );
+
+		$is_plugin = isset( $managed_plugins[ $repo_slug ] );
+		$is_theme  = isset( $managed_themes[ $repo_slug ] );
+
+		if ( ! $is_plugin && ! $is_theme ) {
+			return new WP_Error( 'codesync_not_managed', __( 'Repositório não encontrado na lista gerenciada.', 'codesync-manager-for-github' ) );
+		}
+
+		$package_type_wp = $is_theme ? 'theme' : 'plugin';
+		$plugin_data     = $is_theme ? $managed_themes[ $repo_slug ] : $managed_plugins[ $repo_slug ];
+
+		$selected_subfolder = isset( $plugin_data['subfolder'] ) ? $plugin_data['subfolder'] : '';
+		$stored_branch      = isset( $plugin_data['branch_name'] ) ? $plugin_data['branch_name'] : '';
+
+		$parts = explode( '/', $repo_slug );
+		if ( count( $parts ) !== 2 ) {
+			return new WP_Error( 'codesync_invalid_slug', __( 'Slug de repositório inválido.', 'codesync-manager-for-github' ) );
+		}
+		$owner = $parts[0];
+		$repo  = $parts[1];
+
+		$api = new CODESYNC_GitHub_API( $decrypted );
+
+		// Determine the target release or branch
+		$target_release = null;
+		if ( ! empty( $plugin_data['is_branch'] ) && ! empty( $stored_branch ) ) {
+			$target_release = array(
+				'tag_name'    => $stored_branch,
+				'zipball_url' => 'https://api.github.com/repos/' . $repo_slug . '/zipball/' . $stored_branch,
+				'assets'      => array(),
+				'is_branch'   => true,
+				'branch_name' => $stored_branch,
+			);
+		} else {
+			$releases = $api->get_releases( $owner, $repo, true );
+			if ( is_wp_error( $releases ) ) {
+				return $releases;
+			}
+			if ( empty( $releases ) ) {
+				return new WP_Error( 'codesync_no_releases', __( 'Nenhuma release encontrada no repositório.', 'codesync-manager-for-github' ) );
+			}
+			$target_release = $releases[0];
+
+			// If not force reinstall, check whether the latest version is actually newer.
+			if ( ! $force_reinstall && $is_plugin ) {
+				$plugin_file = isset( $plugin_data['plugin_file'] ) ? $plugin_data['plugin_file'] : '';
+				if ( ! empty( $plugin_file ) && file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
+					$file_data         = get_file_data( WP_PLUGIN_DIR . '/' . $plugin_file, array( 'Version' => 'Version' ) );
+					$installed_version = ! empty( $file_data['Version'] ) ? $file_data['Version'] : '0.0.0';
+					$latest_version    = ltrim( $target_release['tag_name'], 'vV' );
+					if ( version_compare( $latest_version, $installed_version, '<=' ) ) {
+						return new WP_Error(
+							'codesync_already_updated',
+							/* translators: %s: version number */
+							sprintf( __( 'O pacote já está na versão mais recente (%s).', 'codesync-manager-for-github' ), $installed_version )
+						);
+					}
+				}
+			}
+		}
+
+		$package_url = '';
+		if ( ! empty( $target_release['assets'] ) ) {
+			$package_url = $target_release['assets'][0]['url'];
+		} elseif ( ! empty( $target_release['zipball_url'] ) ) {
+			$package_url = $target_release['zipball_url'];
+		}
+
+		if ( empty( $package_url ) ) {
+			return new WP_Error( 'codesync_no_package', __( 'Nenhum pacote ZIP encontrado para download.', 'codesync-manager-for-github' ) );
+		}
+
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			include_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+
+		self::$currently_installing_repo      = $repo_slug;
+		self::$currently_installing_subfolder = $selected_subfolder;
+		self::$currently_installing_type      = $package_type_wp;
+		self::$ignore_php_check               = $ignore_php_check;
+
+		$codesync_fs_filter = function() { return 'direct'; };
+		add_filter( 'filesystem_method', $codesync_fs_filter, PHP_INT_MAX );
+
+		$skin = new Automatic_Upgrader_Skin();
+		if ( 'theme' === $package_type_wp ) {
+			include_once ABSPATH . 'wp-admin/includes/theme.php';
+			$upgrader = new Theme_Upgrader( $skin );
+		} else {
+			include_once ABSPATH . 'wp-admin/includes/plugin.php';
+			$upgrader = new Plugin_Upgrader( $skin );
+		}
+
+		$result = $upgrader->install( $package_url, array( 'overwrite_package' => true ) );
+
+		remove_filter( 'filesystem_method', $codesync_fs_filter, PHP_INT_MAX );
+		wp_clean_plugins_cache();
+
+		self::$currently_installing_repo      = '';
+		self::$currently_installing_subfolder = '';
+		self::$currently_installing_type      = '';
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		if ( ! $result ) {
+			return new WP_Error( 'codesync_install_failed', __( 'A reinstalação falhou. Verifique as permissões do servidor.', 'codesync-manager-for-github' ) );
+		}
+
+		$latest_version = ltrim( $target_release['tag_name'], 'vV' );
+
+		// Update managed record
+		if ( $is_plugin ) {
+			$managed_plugins[ $repo_slug ]['status']         = 'atualizado';
+			$managed_plugins[ $repo_slug ]['latest_version'] = $latest_version;
+			$managed_plugins[ $repo_slug ]['last_checked']   = current_time( 'mysql' );
+			$managed_plugins[ $repo_slug ]['error_message']  = '';
+			CODESYNC_Manager::update_option_no_autoload( CODESYNC_Manager::OPTION_PLUGINS, $managed_plugins );
+			$plugin_name = isset( $plugin_data['plugin_file'] ) ? dirname( $plugin_data['plugin_file'] ) : $repo_slug;
+		} else {
+			$managed_themes[ $repo_slug ]['status']         = 'atualizado';
+			$managed_themes[ $repo_slug ]['latest_version'] = $latest_version;
+			$managed_themes[ $repo_slug ]['last_checked']   = current_time( 'mysql' );
+			$managed_themes[ $repo_slug ]['error_message']  = '';
+			CODESYNC_Manager::update_option_no_autoload( CODESYNC_Manager::OPTION_THEMES, $managed_themes );
+			$plugin_name = isset( $plugin_data['theme_folder'] ) ? $plugin_data['theme_folder'] : $repo_slug;
+		}
+
+		return array(
+			'version'     => $latest_version,
+			'plugin_name' => $plugin_name,
+		);
+	}
 }
