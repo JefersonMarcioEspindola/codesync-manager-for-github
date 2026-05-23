@@ -130,6 +130,25 @@ class CODESYNC_Admin_UI {
 				'select_folder_desc'    => __( 'Indicate the subfolder of the repository where the package files actually reside (the folder containing the main PHP or style.css file). The manager will extract only this folder, discarding external files. This allows directly syncing the source code without generating ZIPs or manual releases!', 'codesync-manager-for-github' ),
 				'root_folder'           => __( 'Root Folder', 'codesync-manager-for-github' ),
 				'close_btn'             => __( 'Close', 'codesync-manager-for-github' ),
+				'plugin_validation'     => __( 'Plugin Validation', 'codesync-manager-for-github' ),
+				'update_package'        => __( 'Update Package', 'codesync-manager-for-github' ),
+				'check_plugin_optional' => __( 'Check Plugin (Optional)', 'codesync-manager-for-github' ),
+				'checking'              => __( 'Checking...', 'codesync-manager-for-github' ),
+				'confirm_force_install' => __( 'This package presented critical failures in the validation. Installing anyway is not recommended and might break your site. Are you sure?', 'codesync-manager-for-github' ),
+				'webhook_active_title'  => __( 'Webhook Active', 'codesync-manager-for-github' ),
+				'webhook_config_title'  => __( 'Webhook Configuration', 'codesync-manager-for-github' ),
+				'verify_webhook_btn'    => __( 'Verify Webhook', 'codesync-manager-for-github' ),
+				'disconnecting'         => __( 'Disconnecting...', 'codesync-manager-for-github' ),
+				'disconnect_label'      => __( 'Disconnect', 'codesync-manager-for-github' ),
+				/* translators: %s: date and time */
+				'connected_since_fmt'   => __( 'Connected since %s · Auto-sync active', 'codesync-manager-for-github' ),
+				/* translators: %s: repository name */
+				'confirm_webhook_disc'  => __( 'Are you sure you want to disconnect the webhook for %s? The webhook on GitHub will remain, but the connection status will be reset here.', 'codesync-manager-for-github' ),
+				'comm_error_retry'      => __( 'Communication error. Try again.', 'codesync-manager-for-github' ),
+				'report_copied'         => __( 'Report copied to clipboard!', 'codesync-manager-for-github' ),
+				'no_logs_yet'           => __( 'No activity recorded yet for this repository.', 'codesync-manager-for-github' ),
+				'logs_load_fail'        => __( 'Failed to load logs.', 'codesync-manager-for-github' ),
+				'logs_cap_notice'       => __( 'Showing 20 most recent entries — older logs not displayed.', 'codesync-manager-for-github' ),
 			),
 		) );
 	}

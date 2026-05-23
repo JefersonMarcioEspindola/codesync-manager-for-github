@@ -459,7 +459,7 @@ jQuery(document).ready(function($) {
 						
 						// Add a Check Plugin button if it doesn't exist
 						if ($modalFooter.find('.codesync-btn-check-plugin').length === 0) {
-							$('<button type="button" class="button codesync-btn-check-plugin" style="margin-right:10px;">Check Plugin (Optional)</button>').insertBefore($modalFooter.find('.codesync-btn-confirm-install'));
+							$('<button type="button" class="button codesync-btn-check-plugin" style="margin-right:10px;">' + codesync_ajax.texts.check_plugin_optional + '</button>').insertBefore($modalFooter.find('.codesync-btn-confirm-install'));
 						} else {
 							$modalFooter.find('.codesync-btn-check-plugin').show();
 						}
@@ -468,7 +468,7 @@ jQuery(document).ready(function($) {
 						$modalFooter.off('click', '.codesync-btn-check-plugin').on('click', '.codesync-btn-check-plugin', function() {
 							$(this).hide(); // Hide the check button
 							$modalFooter.find('.codesync-btn-confirm-install').hide(); // Hide install until check finishes
-							$modal.find('.codesync-modal-title').text('Plugin Validation');
+							$modal.find('.codesync-modal-title').text(codesync_ajax.texts.plugin_validation);
 							$modalBody.children().hide();
 							$modalBody.append(checkerTmpl);
 							setTimeout(function() {
@@ -596,7 +596,7 @@ jQuery(document).ready(function($) {
 		e.preventDefault();
 		
 		if ($(this).hasClass('codesync-btn-force-install')) {
-			if (!confirm('This package presented critical failures in the validation. Installing anyway is not recommended and might break your site. Are you sure?')) {
+			if (!confirm(codesync_ajax.texts.confirm_force_install)) {
 				return;
 			}
 		}
@@ -885,7 +885,7 @@ jQuery(document).ready(function($) {
 		installRepo = repo;
 		installIsDone = false;
 
-		$modal.find('.codesync-modal-title').text('Update Package');
+		$modal.find('.codesync-modal-title').text(codesync_ajax.texts.update_package);
 		$modalFooter.find('.codesync-modal-btn-cancel').show().prop('disabled', false);
 		$modalFooter.find('.codesync-btn-confirm-install, .codesync-btn-force-install, .codesync-btn-copy-md, .codesync-btn-check-plugin').hide();
 
@@ -982,7 +982,7 @@ jQuery(document).ready(function($) {
 		$webhookModal.removeClass('codesync-modal-open');
 		setTimeout(function() {
 			$webhookModal.hide();
-			$('#codesync-btn-verify-webhook').prop('disabled', true).text('Verify Webhook').show().css({
+			$('#codesync-btn-verify-webhook').prop('disabled', true).text(codesync_ajax.texts.verify_webhook_btn).show().css({
 				'background-color': '', 'border-color': '', 'color': ''
 			});
 		}, 250);
@@ -1001,8 +1001,8 @@ jQuery(document).ready(function($) {
 		}
 
 		// Reset modal state
-		$('#codesync-webhook-modal-title').text(isActive ? 'Webhook Active' : 'Webhook Configuration');
-		$('#codesync-btn-verify-webhook').prop('disabled', true).text('Verify Webhook').css({
+		$('#codesync-webhook-modal-title').text(isActive ? codesync_ajax.texts.webhook_active_title : codesync_ajax.texts.webhook_config_title);
+		$('#codesync-btn-verify-webhook').prop('disabled', true).text(codesync_ajax.texts.verify_webhook_btn).css({
 			'background-color': '', 'border-color': '', 'color': ''
 		});
 
@@ -1045,19 +1045,19 @@ jQuery(document).ready(function($) {
 			},
 			success: function(response) {
 				if (!response.success) {
-					$list.html('<p style="padding:16px; color:#94a3b8; font-size:13px; margin:0; text-align:center;">No logs found.</p>');
+					$list.html('<p style="padding:16px; color:#94a3b8; font-size:13px; margin:0; text-align:center;">' + codesync_ajax.texts.no_logs_yet + '</p>');
 					return;
 				}
 				var data = response.data;
 
 				// Update ping info line
 				if (data.ping_time) {
-					$pingInfo.text('Connected since ' + data.ping_time + ' · Auto-sync active');
+					$pingInfo.text(codesync_ajax.texts.connected_since_fmt.replace('%s', data.ping_time));
 				}
 
 				// Render logs
 				if (!data.logs || data.logs.length === 0) {
-					$list.html('<p style="padding:16px; color:#94a3b8; font-size:13px; margin:0; text-align:center;">No activity recorded yet for this repository.</p>');
+					$list.html('<p style="padding:16px; color:#94a3b8; font-size:13px; margin:0; text-align:center;">' + codesync_ajax.texts.no_logs_yet + '</p>');
 					return;
 				}
 
@@ -1086,12 +1086,12 @@ jQuery(document).ready(function($) {
 					html += '</div>';
 				});
 				if (data.has_more) {
-					html += '<p style="text-align:center; padding:8px; font-size:11px; color:#94a3b8; margin:0; border-top:1px solid #e2e8f0;">Showing 20 most recent entries — older logs not displayed.</p>';
+					html += '<p style="text-align:center; padding:8px; font-size:11px; color:#94a3b8; margin:0; border-top:1px solid #e2e8f0;">' + codesync_ajax.texts.logs_cap_notice + '</p>';
 				}
 				$list.html(html);
 			},
 			error: function() {
-				$list.html('<p style="padding:16px; color:#ef4444; font-size:13px; margin:0; text-align:center;">Failed to load logs.</p>');
+				$list.html('<p style="padding:16px; color:#ef4444; font-size:13px; margin:0; text-align:center;">' + codesync_ajax.texts.logs_load_fail + '</p>');
 			}
 		});
 	}
@@ -1101,7 +1101,7 @@ jQuery(document).ready(function($) {
 		e.preventDefault();
 		$('#codesync-webhook-active-view').slideUp(200);
 		$('#codesync-webhook-setup-view').slideDown(200);
-		$('#codesync-webhook-modal-title').text('Webhook Configuration');
+		$('#codesync-webhook-modal-title').text(codesync_ajax.texts.webhook_config_title);
 		$('#codesync-btn-verify-webhook').show().prop('disabled', false);
 	});
 
@@ -1109,11 +1109,11 @@ jQuery(document).ready(function($) {
 	$webhookModal.on('click', '#codesync-btn-disconnect-webhook', function(e) {
 		e.preventDefault();
 		if (!currentWebhookRepo) return;
-		if (!confirm('Are you sure you want to disconnect the webhook for ' + currentWebhookRepo + '? The webhook on GitHub will remain, but the connection status will be reset here.')) {
+		if (!confirm(codesync_ajax.texts.confirm_webhook_disc.replace('%s', currentWebhookRepo))) {
 			return;
 		}
 		var $btn = $(this);
-		$btn.prop('disabled', true).text('Disconnecting...');
+		$btn.prop('disabled', true).text(codesync_ajax.texts.disconnecting);
 
 		$.ajax({
 			url: codesync_ajax.url,
@@ -1134,18 +1134,18 @@ jQuery(document).ready(function($) {
 					$('#codesync-webhook-active-view').slideUp(200, function() {
 						$('#codesync-webhook-setup-view').slideDown(200);
 					});
-					$('#codesync-webhook-modal-title').text('Webhook Configuration');
+					$('#codesync-webhook-modal-title').text(codesync_ajax.texts.webhook_config_title);
 					$('#codesync-btn-verify-webhook').show().prop('disabled', true);
 					currentWebhookRepo = '';
 				} else {
 					alert(response.data.message);
-					$btn.prop('disabled', false).html('<i data-lucide="unplug" style="width:13px;height:13px;"></i> Disconnect');
+					$btn.prop('disabled', false).html('<i data-lucide="unplug" style="width:13px;height:13px;"></i> ' + codesync_ajax.texts.disconnect_label);
 					if (window.lucide) { window.lucide.createIcons({ nodes: [$btn[0]] }); }
 				}
 			},
 			error: function() {
-				alert('Communication error. Try again.');
-				$btn.prop('disabled', false).html('<i data-lucide="unplug" style="width:13px;height:13px;"></i> Disconnect');
+				alert(codesync_ajax.texts.comm_error_retry);
+				$btn.prop('disabled', false).html('<i data-lucide="unplug" style="width:13px;height:13px;"></i> ' + codesync_ajax.texts.disconnect_label);
 				if (window.lucide) { window.lucide.createIcons({ nodes: [$btn[0]] }); }
 			}
 		});
@@ -1196,7 +1196,7 @@ jQuery(document).ready(function($) {
 		if (!currentWebhookRepo) return;
 		var $btn = $(this);
 		
-		$btn.prop('disabled', true).html('<i data-lucide="loader-2" class="codesync-icon codesync-spin"></i> Checking...');
+		$btn.prop('disabled', true).html('<i data-lucide="loader-2" class="codesync-icon codesync-spin"></i> ' + codesync_ajax.texts.checking);
 		lucide.createIcons({ nodes: [$btn[0]] });
 
 		$.ajax({
@@ -1210,7 +1210,7 @@ jQuery(document).ready(function($) {
 			success: function(response) {
 				if (response.success) {
 					// Transition to active view
-					$('#codesync-webhook-modal-title').text('Webhook Active');
+					$('#codesync-webhook-modal-title').text(codesync_ajax.texts.webhook_active_title);
 					$('#codesync-webhook-setup-view').slideUp(300, function() {
 						$('#codesync-webhook-active-view').slideDown(300);
 					});
@@ -1224,7 +1224,7 @@ jQuery(document).ready(function($) {
 					var $card = $pluginsCards.find('.codesync-plugin-card[data-repo="' + currentWebhookRepo + '"]');
 					if ($card.length && !$card.find('.codesync-webhook-active-badge').length) {
 						var badgeHtml = '<span class="codesync-webhook-active-badge" style="display:inline-flex; align-items:center; background:#e5f6e8; color:#00a32a; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600;">' +
-							'<i data-lucide="radio" style="width:12px;height:12px;margin-right:4px;"></i> Webhook Active' +
+							'<i data-lucide="radio" style="width:12px;height:12px;margin-right:4px;"></i> ' + codesync_ajax.texts.webhook_active_title +
 							'</span>';
 						$card.find('.codesync-status-badge').parent().append(badgeHtml);
 						lucide.createIcons({ nodes: [$card[0]] });
@@ -1239,7 +1239,7 @@ jQuery(document).ready(function($) {
 					
 					// Reset button style after a few seconds so they can try again
 					setTimeout(function() {
-						$btn.html('Verify Webhook').css({
+						$btn.html(codesync_ajax.texts.verify_webhook_btn).css({
 							'background-color': '',
 							'border-color': '',
 							'color': ''
@@ -1248,9 +1248,9 @@ jQuery(document).ready(function($) {
 				}
 			},
 			error: function() {
-				$btn.prop('disabled', false).html('Communication error. Try again.');
+				$btn.prop('disabled', false).html(codesync_ajax.texts.comm_error_retry);
 				setTimeout(function() {
-					$btn.html('Verify Webhook');
+					$btn.html(codesync_ajax.texts.verify_webhook_btn);
 				}, 3000);
 			}
 		});
@@ -1432,7 +1432,7 @@ jQuery(document).ready(function($) {
 		e.preventDefault();
 		var text = checkerLogs.join('\n');
 		navigator.clipboard.writeText(text).then(function() {
-			alert('Report copied to clipboard!');
+			alert(codesync_ajax.texts.report_copied);
 		});
 	});
 

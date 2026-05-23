@@ -105,12 +105,12 @@ class CODESYNC_Checker {
 	public static function ajax_step_download() {
 		check_ajax_referer( 'codesync_admin_nonce', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => 'Sem permissão.' ) );
+			wp_send_json_error( array( 'message' => __( 'Sem permissão.', 'codesync-manager-for-github' ) ) );
 		}
 
 		$repo_slug = isset( $_POST['repo'] ) ? sanitize_text_field( wp_unslash( $_POST['repo'] ) ) : '';
 		if ( empty( $repo_slug ) ) {
-			wp_send_json_error( array( 'message' => 'Repositório não fornecido.' ) );
+			wp_send_json_error( array( 'message' => __( 'Repositório não fornecido.', 'codesync-manager-for-github' ) ) );
 		}
 
 		$api = self::get_api();
@@ -120,7 +120,7 @@ class CODESYNC_Checker {
 
 		$parts = explode( '/', $repo_slug );
 		if ( count( $parts ) !== 2 ) {
-			wp_send_json_error( array( 'message' => 'Slug inválido.' ) );
+			wp_send_json_error( array( 'message' => __( 'Slug inválido.', 'codesync-manager-for-github' ) ) );
 		}
 
 		// Create a unique session ID
@@ -147,7 +147,8 @@ class CODESYNC_Checker {
 		$download_file = $api->download_package( $zip_url );
 
 		if ( is_wp_error( $download_file ) ) {
-			wp_send_json_error( array( 'message' => 'Erro ao baixar repositório: ' . $download_file->get_error_message() ) );
+			/* translators: %s: error message */
+			wp_send_json_error( array( 'message' => sprintf( __( 'Erro ao baixar repositório: %s', 'codesync-manager-for-github' ), $download_file->get_error_message() ) ) );
 		}
 
 		if ( ! is_dir( $inspect_dir ) ) {
@@ -158,7 +159,8 @@ class CODESYNC_Checker {
 		wp_delete_file( $download_file );
 
 		if ( is_wp_error( $unzip_result ) ) {
-			wp_send_json_error( array( 'message' => 'Erro ao extrair pacote: ' . $unzip_result->get_error_message() ) );
+			/* translators: %s: error message */
+			wp_send_json_error( array( 'message' => sprintf( __( 'Erro ao extrair pacote: %s', 'codesync-manager-for-github' ), $unzip_result->get_error_message() ) ) );
 		}
 
 		// GitHub wraps everything in a root folder. Find it and move contents up.
@@ -188,7 +190,7 @@ class CODESYNC_Checker {
 		check_ajax_referer( 'codesync_admin_nonce', 'nonce' );
 		$base_path = isset( $_POST['base_path'] ) ? sanitize_text_field( wp_unslash( $_POST['base_path'] ) ) : '';
 		if ( empty( $base_path ) || ! is_dir( $base_path ) ) {
-			wp_send_json_error( array( 'message' => 'Caminho base inválido.' ) );
+			wp_send_json_error( array( 'message' => __( 'Caminho base inválido.', 'codesync-manager-for-github' ) ) );
 		}
 
 		$passed = array();
@@ -264,7 +266,7 @@ class CODESYNC_Checker {
 		check_ajax_referer( 'codesync_admin_nonce', 'nonce' );
 		$base_path = isset( $_POST['base_path'] ) ? sanitize_text_field( wp_unslash( $_POST['base_path'] ) ) : '';
 		if ( empty( $base_path ) || ! is_dir( $base_path ) ) {
-			wp_send_json_error( array( 'message' => 'Caminho base inválido.' ) );
+			wp_send_json_error( array( 'message' => __( 'Caminho base inválido.', 'codesync-manager-for-github' ) ) );
 		}
 
 		$passed = array();
@@ -354,7 +356,7 @@ class CODESYNC_Checker {
 		check_ajax_referer( 'codesync_admin_nonce', 'nonce' );
 		$base_path = isset( $_POST['base_path'] ) ? sanitize_text_field( wp_unslash( $_POST['base_path'] ) ) : '';
 		if ( empty( $base_path ) || ! is_dir( $base_path ) ) {
-			wp_send_json_error( array( 'message' => 'Caminho base inválido.' ) );
+			wp_send_json_error( array( 'message' => __( 'Caminho base inválido.', 'codesync-manager-for-github' ) ) );
 		}
 
 		$passed = array();

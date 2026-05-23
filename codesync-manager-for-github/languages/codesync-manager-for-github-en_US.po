@@ -721,3 +721,102 @@ msgstr "&#x2705; Plugin Synchronized Successfully!"
 
 msgid "O plugin <strong>%1$s</strong> já estava instalado no seu WordPress. O código foi atualizado e agora está sincronizado e sendo gerenciado (Versão %2$s)."
 msgstr "The plugin <strong>%1$s</strong> was already installed on your WordPress. The code has been updated and is now synchronized and managed (Version %2$s)."
+
+msgid "Plugin Validation"
+msgstr "Plugin Validation"
+
+msgid "Update Package"
+msgstr "Update Package"
+
+msgid "Check Plugin (Optional)"
+msgstr "Check Plugin (Optional)"
+
+msgid "Checking..."
+msgstr "Checking..."
+
+msgid "This package presented critical failures in the validation. Installing anyway is not recommended and might break your site. Are you sure?"
+msgstr "This package presented critical failures in the validation. Installing anyway is not recommended and might break your site. Are you sure?"
+
+msgid "Webhook Active"
+msgstr "Webhook Active"
+
+msgid "Webhook Configuration"
+msgstr "Webhook Configuration"
+
+msgid "Verify Webhook"
+msgstr "Verify Webhook"
+
+msgid "Disconnect Webhook"
+msgstr "Disconnect Webhook"
+
+msgid "Disconnecting..."
+msgstr "Disconnecting..."
+
+msgid "Disconnect"
+msgstr "Disconnect"
+
+msgid "Connected since %s · Auto-sync active"
+msgstr "Connected since %s · Auto-sync active"
+
+msgid "Are you sure you want to disconnect the webhook for %s? The webhook on GitHub will remain, but the connection status will be reset here."
+msgstr "Are you sure you want to disconnect the webhook for %s? The webhook on GitHub will remain, but the connection status will be reset here."
+
+msgid "Communication error. Try again."
+msgstr "Communication error. Try again."
+
+msgid "Report copied to clipboard!"
+msgstr "Report copied to clipboard!"
+
+msgid "No activity recorded yet for this repository."
+msgstr "No activity recorded yet for this repository."
+
+msgid "Failed to load logs."
+msgstr "Failed to load logs."
+
+msgid "Showing 20 most recent entries — older logs not displayed."
+msgstr "Showing 20 most recent entries — older logs not displayed."
+
+msgid "Plugin Version"
+msgstr "Plugin Version"
+
+msgid "WordPress does not allow a plugin to activate another plugin. Click the button below to activate it — auto-sync will start right after."
+msgstr "WordPress does not allow a plugin to activate another plugin. Click the button below to activate it — auto-sync will start right after."
+
+msgid "Recent Activity"
+msgstr "Recent Activity"
+
+msgid "View webhook configuration details"
+msgstr "View webhook configuration details"
+
+msgid "Receiving real-time updates from GitHub"
+msgstr "Receiving real-time updates from GitHub"
+
+msgid "Slug inválido."
+msgstr "Invalid slug."
+
+msgid "Repositório não fornecido."
+msgstr "Repository not provided."
+
+msgid "Sem permissão."
+msgstr "No permission."
+
+msgid "Caminho base inválido."
+msgstr "Invalid base path."
+
+msgid "Erro ao baixar repositório: %s"
+msgstr "Error downloading repository: %s"
+
+msgid "Erro ao extrair pacote: %s"
+msgstr "Error extracting package: %s"
+
+msgid "The package <strong>%1$s</strong> (Version %2$s) was downloaded and saved on your WordPress."
+msgstr "The package <strong>%1$s</strong> (Version %2$s) was downloaded and saved on your WordPress."
+
+msgid "Parou de gerenciar o repositório. O plugin continua instalado no WordPress."
+msgstr "Stopped managing the repository. The plugin remains installed on WordPress."
+
+msgid "Falha na descriptografia do token (chave incorreta ou integridade violada)."
+msgstr "Token decryption failed (incorrect key or integrity violation)."
+
+msgid "Cron automático executou a verificação periódica de atualizações e limpeza."
+msgstr "Automatic cron executed periodic update check and cleanup."
