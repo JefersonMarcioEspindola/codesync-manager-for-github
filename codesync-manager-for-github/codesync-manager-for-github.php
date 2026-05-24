@@ -47,9 +47,7 @@ spl_autoload_register( function( $class_name ) {
  */
 function codesync_init() {
 
-	// Force language override if set
-	unload_textdomain( 'codesync-manager-for-github' );
-	load_plugin_textdomain( 'codesync-manager-for-github', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	// WordPress 4.6+ automatically loads translations. The custom locale is handled by the plugin_locale filter.
 
 	// Initialize core components
 	CODESYNC_Updater::init();
