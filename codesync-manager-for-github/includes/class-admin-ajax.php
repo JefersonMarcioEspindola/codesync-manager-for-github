@@ -381,6 +381,9 @@ class CODESYNC_Admin_AJAX {
 					if ( ! empty( $latest_folder ) && ( time() - $latest_time ) < 300 ) {
 						$nested_files = glob( WP_PLUGIN_DIR . '/' . $latest_folder . '/*.php' );
 						foreach ( $nested_files as $nf ) {
+							if ( ! function_exists( 'get_file_data' ) ) {
+								require_once ABSPATH . 'wp-admin/includes/plugin.php';
+							}
 							$data_f = get_file_data( $nf, array( 'PluginName' => 'Plugin Name' ) );
 							if ( ! empty( $data_f['PluginName'] ) ) {
 								$installed_plugin_file = $latest_folder . '/' . basename( $nf );
@@ -554,6 +557,9 @@ class CODESYNC_Admin_AJAX {
 					$installed_version = $theme->get('Version');
 				}
 			} else {
+				if ( ! function_exists( 'get_file_data' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/plugin.php';
+				}
 				$file_data = get_file_data( $package_path, array( 'Version' => 'Version' ) );
 				$installed_version = ! empty( $file_data['Version'] ) ? $file_data['Version'] : '0.0.0';
 			}
@@ -899,6 +905,9 @@ class CODESYNC_Admin_AJAX {
 		// Capture the current installed version before overwriting it.
 		$blocked_version = '';
 		if ( ! empty( $plugin_file ) && file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
+			if ( ! function_exists( 'get_file_data' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
 			$current_data    = get_file_data( WP_PLUGIN_DIR . '/' . $plugin_file, array( 'Version' => 'Version' ) );
 			$blocked_version = ! empty( $current_data['Version'] ) ? $current_data['Version'] : '';
 		}

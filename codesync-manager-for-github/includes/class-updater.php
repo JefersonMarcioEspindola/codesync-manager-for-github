@@ -112,6 +112,9 @@ class CODESYNC_Updater {
 			}
 
 			// Get installed version and Text Domain using native get_file_data
+			if ( ! function_exists( 'get_file_data' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
 			$file_data = get_file_data( $plugin_abs_path, array(
 				'Version'    => 'Version',
 				'TextDomain' => 'Text Domain',
@@ -437,6 +440,9 @@ class CODESYNC_Updater {
 			}
 
 			if ( 'theme' === $package_type ) {
+				if ( ! function_exists( 'get_file_data' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/plugin.php';
+				}
 				$data = get_file_data( $file_path, array(
 					'ThemeName'  => 'Theme Name',
 					'TextDomain' => 'Text Domain',
@@ -451,6 +457,9 @@ class CODESYNC_Updater {
 					break;
 				}
 			} else {
+				if ( ! function_exists( 'get_file_data' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/plugin.php';
+				}
 				$data = get_file_data( $file_path, array(
 					'PluginName' => 'Plugin Name',
 					'TextDomain' => 'Text Domain',
@@ -906,6 +915,9 @@ class CODESYNC_Updater {
 			if ( ! $force_reinstall && $is_plugin ) {
 				$plugin_file = isset( $plugin_data['plugin_file'] ) ? $plugin_data['plugin_file'] : '';
 				if ( ! empty( $plugin_file ) && file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
+					if ( ! function_exists( 'get_file_data' ) ) {
+						require_once ABSPATH . 'wp-admin/includes/plugin.php';
+					}
 					$file_data         = get_file_data( WP_PLUGIN_DIR . '/' . $plugin_file, array( 'Version' => 'Version' ) );
 					$installed_version = ! empty( $file_data['Version'] ) ? $file_data['Version'] : '0.0.0';
 					if ( version_compare( $latest_version, $installed_version, '<=' ) ) {

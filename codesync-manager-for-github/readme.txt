@@ -3,7 +3,7 @@ Contributors: JefersonMarcioEspindola, jefersonespindola
 Tags: github, plugin updater, private plugins, github releases, self-hosted
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 2.0.016
+Stable tag: 2.0.017
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -84,6 +84,9 @@ This service is provided by GitHub, Inc.
 3. Activity log showing install and update history.
 
 == Changelog ==
+
+= 2.0.017 =
+* Fix: Loaded the required `wp-admin/includes/plugin.php` file dynamically in background REST API (webhook) and Cron contexts to prevent fatal errors when calling `get_file_data()`.
 
 = 2.0.016 =
 * Enhancement: Added a comprehensive error mapping helper that translates raw WordPress filesystem, download, copy, and ZIP errors into highly detailed, developer-friendly troubleshooting messages.
